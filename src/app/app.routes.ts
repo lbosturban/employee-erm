@@ -112,5 +112,12 @@ export const routes: Routes = [
         (m) => m.LegalElementsPage,
       ),
   },
+  // ── Phase 3 — AI Agent section (placeholder; also flips the brand) ──
+  {
+    path: 'ai-agent',
+    title: 'Contacts ERM — AI Agent',
+    loadComponent: () =>
+      import('./features/ai/agent-page/agent-page').then((m) => m.AgentPage),
+  },
   { path: '**', redirectTo: '' },
 ];

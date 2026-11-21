@@ -91,8 +91,8 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     const links = [...compiled.querySelectorAll('.sidebar a')];
-    // Dashboard, Contacts, Categories, Companies, Favorites + 2 CTAs + 4 ERM entries.
-    expect(links.length).toBe(11);
+    // Dashboard, Contacts, Categories, Companies, Favorites + 2 CTAs + 4 ERM entries + AI CTA.
+    expect(links.length).toBe(12);
     expect(links.some((link) => link.getAttribute('href') === '/companies')).toBe(true);
     expect(links.some((link) => link.getAttribute('href') === '/erm/cases')).toBe(true);
     expect(links.some((link) => link.getAttribute('href') === '/erm/escalations')).toBe(true);
@@ -100,6 +100,7 @@ describe('App', () => {
       true,
     );
     expect(links.some((link) => link.getAttribute('href') === '/erm/legal-elements')).toBe(true);
+    expect(links.some((link) => link.getAttribute('href') === '/ai-agent')).toBe(true);
     // Phase 2 is live: no placeholders or "coming soon" tags remain.
     expect(compiled.querySelectorAll('.sidebar-item-disabled').length).toBe(0);
     expect(compiled.querySelector('.phase-tag')).toBeNull();

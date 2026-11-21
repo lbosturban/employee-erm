@@ -1,0 +1,169 @@
+/* ── Phase 3: AI Agent placeholder page ────────────────────────────── */
+
+.agent-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 60vh;
+}
+
+/* Placeholder-status banner doubling as the page title. */
+.agent-notice {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--accent-soft, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  max-width: 60%;
+}
+
+/* The chat area occupies the right half of the page, keeping the
+   central-to-right aesthetics requested for this section. */
+.agent-column {
+  margin-left: 50%;
+  width: 50%;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.agent-transcript-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.agent-transcript {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.agent-empty {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* One echoed instruction: chat bubble, left-justified. */
+.agent-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: left;
+}
+
+.agent-entry.expanded {
+  border-color: var(--accent, var(--border));
+}
+
+.agent-entry-text {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Folded: only the first line shows; excess words are clipped with an
+   ellipsis to preserve the column's tidy right edge. */
+.agent-entry-text.folded {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  max-height: 1.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+/* Unfold/refold toggle, docked on the right INSIDE the entry. */
+.agent-toggle {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.agent-toggle:hover,
+.agent-toggle:focus-visible {
+  color: var(--text);
+  border-color: var(--accent, var(--border));
+}
+
+/* The always-ready prompt pinned to the bottom of the column. */
+.agent-prompt {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  position: sticky;
+  bottom: 0;
+  background: var(--background, var(--surface));
+  padding-top: var(--space-2);
+}
+
+.agent-prompt-input {
+  flex: 1;
+  resize: vertical;
+  min-height: 2.6rem;
+  font: inherit;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+}
+
+.agent-prompt-input:focus-visible {
+  outline: 2px solid var(--accent, var(--border));
+  outline-offset: 1px;
+}
+
+.agent-send {
+  flex: none;
+  white-space: nowrap;
+}
+
+.visually-hidden-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Narrow screens: let the chat take the full width back. */
+@media (max-width: 920px) {
+  .agent-notice {
+    max-width: none;
+  }
+
+  .agent-column {
+    margin-left: 0;
+    width: 100%;
+  }
+}

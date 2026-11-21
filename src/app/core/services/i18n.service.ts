@@ -8,8 +8,11 @@ type Dictionary = Record<string, string>;
 /** English translations, used as the fallback language. */
 const EN: Dictionary = {
   'app.title': 'Contacts ERM',
-  'app.titleErm': 'Connects ERM',
   'app.tagline': 'Manage HR contacts cleanly',
+  'app.titleErm': 'Connects ERM',
+  'app.taglineErm': 'Manage HR connections',
+  'app.titleAi': 'ERM AI Agent',
+  'app.taglineAi': 'Facilitate HR connections',
   'nav.dashboard': 'Dashboard',
   'nav.contacts': 'Contacts',
   'nav.categories': 'Categories',
@@ -128,6 +131,19 @@ const EN: Dictionary = {
   'escalation.sameContact': 'The target must differ from the source.',
   'legal.noReference': 'No reference yet.',
   'legal.removeReference': 'Remove this reference',
+
+  // ── Phase 3: AI Agent (placeholder) ─────────────────────────────────
+  'nav.aiGroup': 'AI Agent',
+  'ai.start': 'Start with AI Agent',
+  'ai.notice':
+    'The AI Agent functionality is not available yet. The prompt will only echo instructions as stated.',
+  'ai.promptLabel': 'Instruction for the AI Agent',
+  'ai.promptPlaceholder': 'Type an instruction… (Enter to send, Shift+Enter for a new line)',
+  'ai.send': 'Send instruction',
+  'ai.unfold': 'Unfold instruction',
+  'ai.refold': 'Fold instruction',
+  'ai.empty': 'No instruction sent yet.',
+  'ai.transcript': 'Instruction transcript',
   'search.placeholder': 'Search a contact…',
   'search.noResults': 'No contact found.',
   'data.export': 'Export the full database as JSON',
@@ -335,6 +351,8 @@ const EN: Dictionary = {
 /** French translations. Missing keys fall back to English above. */
 const FR: Dictionary = {
   'app.tagline': 'Gérez vos contacts RH proprement',
+  'app.taglineErm': 'Gérez les relations RH',
+  'app.taglineAi': 'Facilitez les relations RH',
   'nav.dashboard': 'Tableau de bord',
   'nav.contacts': 'Contacts',
   'nav.categories': 'Catégories',
@@ -454,6 +472,19 @@ const FR: Dictionary = {
   'escalation.sameContact': 'La cible doit différer de la source.',
   'legal.noReference': 'Aucune référence pour le moment.',
   'legal.removeReference': 'Retirer cette référence',
+
+  // ── Phase 3 : Agent IA (placeholder) ────────────────────────────────
+  'nav.aiGroup': 'Agent IA',
+  'ai.start': 'Démarrer avec l’Agent IA',
+  'ai.notice':
+    'La fonctionnalité Agent IA n’est pas encore disponible. L’invite se contente de répéter les instructions telles quelles.',
+  'ai.promptLabel': 'Instruction pour l’Agent IA',
+  'ai.promptPlaceholder': 'Saisissez une instruction… (Entrée pour envoyer, Maj+Entrée pour un retour à la ligne)',
+  'ai.send': 'Envoyer l’instruction',
+  'ai.unfold': 'Déplier l’instruction',
+  'ai.refold': 'Replier l’instruction',
+  'ai.empty': 'Aucune instruction envoyée pour le moment.',
+  'ai.transcript': 'Historique des instructions',
   'search.placeholder': 'Rechercher un contact…',
   'search.noResults': 'Aucun contact trouvé.',
   'data.export': 'Exporter la base complète en JSON',

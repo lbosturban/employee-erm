@@ -2,13 +2,13 @@
 
 <div class="app-shell">
   <header class="app-header">
-    <!-- Brand flips with the active product line (CRM ↔ ERM /erm/* routes);
-         the link itself always returns to the CRM dashboard. -->
+    <!-- Brand flips with the active product line (CRM ↔ ERM /erm/* ↔ AI
+         Agent /ai-agent); the link itself always returns to the CRM dashboard. -->
     <a routerLink="/" class="brand" [attr.aria-label]="brand.titleKey() | t">
       <img class="brand-mark" [src]="brand.logo()" alt="" aria-hidden="true" />
       <span class="brand-text">
         <strong>{{ brand.titleKey() | t }}</strong>
-        <small>{{ 'app.tagline' | t }}</small>
+        <small>{{ brand.taglineKey() | t }}</small>
       </span>
     </a>
 
@@ -158,6 +158,12 @@
       }}</a>
       <a routerLink="/erm/legal-elements" routerLinkActive="active">{{
         'erm.legalElements' | t
+      }}</a>
+
+      <span class="sidebar-group">{{ 'nav.aiGroup' | t }}</span>
+      <!-- Phase-3 (AI Agent) entry point — also flips the brand when active. -->
+      <a routerLink="/ai-agent" routerLinkActive="active" class="nav-cta ai-cta">{{
+        'ai.start' | t
       }}</a>
     </nav>
 

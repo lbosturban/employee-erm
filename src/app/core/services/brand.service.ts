@@ -3,22 +3,28 @@ import { NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs';
 
 /** Which brand identity the shell currently displays. */
-export type BrandMode = 'crm' | 'erm';
+export type BrandMode = 'crm' | 'erm' | 'ai';
 
 /**
- * Derives the brand mode from a router URL. Every Phase-2 (ERM) feature
- * lives under the `/erm` prefix, so a single prefix check decides the
- * brand without walking the route tree. Exported for unit testing.
+ * Derives the brand mode from a router URL. The ERM product line lives
+ * under `/erm/*` and the AI-Agent section under `/ai-agent*`, so two
+ * prefix checks decide the brand without walking the route tree.
+ * Exported for unit testing.
  */
 export function brandModeFromUrl(url: string): BrandMode {
+  if (url === '/ai-agent' || url.startsWith('/ai-agent/') || url.startsWith('/ai-agent?')) {
+    return 'ai';
+  }
   return url === '/erm' || url.startsWith('/erm/') || url.startsWith('/erm?') ? 'erm' : 'crm';
 }
 
 /**
- * Switches the shell brand (logo + title) between the CRM ("Contacts
- * ERM") and the ERM product line ("Connects ERM") depending on whether
- * the routing table activated a Phase-2 `/erm/*` route. The tagline is
- * intentionally NOT switched: it is shared by both product lines.
+ * Switches the whole shell brand (logo, title AND tagline) between the
+ * three product lines: "Contacts ERM" (CRM), "Connects ERM" (ERM) and
+ * "ERM AI Agent" (AI Agent section), using separate logos and taglines
+ * per mode. The ERM logo (`connects-erm.svg`) and the AI logo
+ * (`ai-agent.svg`, duplicated from the ERM placeholder) await their
+ * final artwork under those filenames.
  */
 @Injectable({ providedIn: 'root' })
 export class BrandService {
@@ -33,16 +39,49 @@ export class BrandService {
       .subscribe((event) => this.mode.set(brandModeFromUrl(event.urlAfterRedirects)));
   }
 
-  /** Reactive brand mode, `'crm'` until an `/erm/*` route activates. */
+  /** Reactive brand mode, `'crm'` until an `/erm/*` or `/ai-agent*` route activates. */
   readonly brandMode = this.mode.asReadonly();
 
   /** True while a Phase-2 (ERM) route is active. */
   readonly isErm = computed(() => this.mode() === 'erm');
 
-  /** Header logo asset for the active brand mode. The ERM art is a
-   *  placeholder (`connects-erm.svg`) awaiting the final logo file. */
-  readonly logo = computed(() => (this.isErm() ? 'connects-erm.svg' : 'contacts-erm.svg'));
+  /** True while the Phase-3 (AI Agent) section is active. */
+  readonly isAi = computed(() => this.mode() === 'ai');
+
+  /** Header logo asset for the active brand mode. The ERM and AI art are
+   *  placeholders awaiting the final logo files (same filenames). */
+  readonly logo = computed(() => {
+    switch (this.mode()) {
+      case 'ai':
+        return 'ai-agent.svg';
+      case 'erm':
+        return 'connects-erm.svg';
+      default:
+        return 'contacts-erm.svg';
+    }
+  });
 
   /** I18n dictionary key of the brand title for the active mode. */
-  readonly titleKey = computed(() => (this.isErm() ? 'app.titleErm' : 'app.title'));
+  readonly titleKey = computed(() => {
+    switch (this.mode()) {
+      case 'ai':
+        return 'app.titleAi';
+      case 'erm':
+        return 'app.titleErm';
+      default:
+        return 'app.title';
+    }
+  });
+
+  /** I18n dictionary key of the brand tagline for the active mode. */
+  readonly taglineKey = computed(() => {
+    switch (this.mode()) {
+      case 'ai':
+        return 'app.taglineAi';
+      case 'erm':
+        return 'app.taglineErm';
+      default:
+        return 'app.tagline';
+    }
+  });
 }

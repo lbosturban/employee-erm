@@ -10,10 +10,16 @@ describe('brandModeFromUrl', () => {
     expect(brandModeFromUrl('/erm/cases/detail')).toBe('erm');
   });
 
+  it('selects the AI brand for /ai-agent URLs', () => {
+    expect(brandModeFromUrl('/ai-agent')).toBe('ai');
+    expect(brandModeFromUrl('/ai-agent/later-section')).toBe('ai');
+  });
+
   it('keeps the CRM brand for every other URL', () => {
     expect(brandModeFromUrl('/')).toBe('crm');
     expect(brandModeFromUrl('/contacts')).toBe('crm');
     expect(brandModeFromUrl('/ermicrosoft')).toBe('crm'); // prefix must not leak
+    expect(brandModeFromUrl('/ai-agents')).toBe('crm'); // prefix must not leak
     expect(brandModeFromUrl('')).toBe('crm');
   });
 });
@@ -37,18 +43,34 @@ describe('BrandService', () => {
     expect(service.isErm()).toBe(false);
   });
 
-  it('switches logo and title on an /erm navigation, back on a CRM one', () => {
+  it('switches logo, title and tagline on an /erm navigation, back on a CRM one', () => {
     events.next(new NavigationEnd(1, '/erm/cases', '/erm/cases'));
     expect(service.brandMode()).toBe('erm');
     expect(service.logo()).toBe('connects-erm.svg');
     expect(service.titleKey()).toBe('app.titleErm');
+    expect(service.taglineKey()).toBe('app.taglineErm');
     expect(service.isErm()).toBe(true);
 
     events.next(new NavigationEnd(2, '/contacts', '/contacts'));
     expect(service.brandMode()).toBe('crm');
     expect(service.logo()).toBe('contacts-erm.svg');
     expect(service.titleKey()).toBe('app.title');
+    expect(service.taglineKey()).toBe('app.tagline');
     expect(service.isErm()).toBe(false);
+  });
+
+  it('switches to the AI brand on /ai-agent with its own logo, title and tagline', () => {
+    events.next(new NavigationEnd(1, '/ai-agent', '/ai-agent'));
+    expect(service.brandMode()).toBe('ai');
+    expect(service.logo()).toBe('ai-agent.svg');
+    expect(service.titleKey()).toBe('app.titleAi');
+    expect(service.taglineKey()).toBe('app.taglineAi');
+    expect(service.isAi()).toBe(true);
+    expect(service.isErm()).toBe(false);
+
+    events.next(new NavigationEnd(2, '/', '/'));
+    expect(service.brandMode()).toBe('crm');
+    expect(service.taglineKey()).toBe('app.tagline');
   });
 
   it('honors redirects via urlAfterRedirects', () => {

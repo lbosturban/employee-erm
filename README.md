@@ -47,13 +47,34 @@ Deleting a category or company is blocked while contacts still reference it, wit
 message. Sample data (9 contacts, 7 companies, 4 categories) is seeded on first run so the layout
 can be appreciated immediately.
 
+### Phase 3 — AI Agent (current, placeholder)
+
+A third sidebar group, **AI Agent**, holds a single *Start with AI Agent* button that routes to
+`/ai-agent`. The header brand switches to a third identity there: **ERM AI Agent** with its own
+logo file (`ai-agent.svg`, placeholder art duplicated from the ERM mark until the final logo
+replaces it) and the tagline *"Facilitate HR connections"* ("*Facilitez les relations RH*" in
+French). Each product line now has its own logo, title **and** tagline:
+
+| Section | Logo | Title | Tagline |
+|---|---|---|---|
+| CRM (`/…`) | `contacts-erm.svg` | Contacts ERM | Manage HR contacts cleanly |
+| ERM (`/erm/*`) | `connects-erm.svg` | Connects ERM | Manage HR connections |
+| AI Agent (`/ai-agent`) | `ai-agent.svg` | ERM AI Agent | Facilitate HR connections |
+
+The `/ai-agent` page is an honest placeholder: a banner states that *"The AI Agent functionality
+is not available yet. The prompt will only echo instructions as stated."* The chat column sits
+on the right half of the page. Submitting (Enter, or the send button — Shift+Enter inserts a
+newline) echoes the instruction into the transcript, left-justified chat style, and a fresh
+empty prompt is ready below. Previous instructions fold to their first line with an
+unfold/refold toggle docked on the right inside the entry, and overflowing words are clipped
+with an ellipsis.
+
 ### Phase 2 — ERM & legal-risk platform (current)
 
 The brand in the header **switches automatically with the product line**: navigating to any
-`/erm/*` section swaps the logo (`connects-erm.svg`) and the title to **"Connects ERM"**; any
-Phase-1 navigation switches back to **"Contacts ERM"** (`contacts-erm.svg`). The tagline stays
-shared. The `connects-erm.svg` file is clearly-marked placeholder art until the final logo
-replaces it under the same filename.
+`/erm/*` section swaps the logo (`connects-erm.svg`), the title to **"Connects ERM"** and the
+tagline to *"Manage HR connections"*; any Phase-1 navigation switches back to **"Contacts ERM"**
+(`contacts-erm.svg`). See Phase 3 below for the third brand mode.
 
 The four sidebar ERM entries are live, lazy-loaded routes under `/erm`:
 
@@ -88,7 +109,7 @@ assessment and 1 legal-elements bundle.
   new control flow (`@if` / `@for`), lazy-loaded routes, `APP_INITIALIZER` bootstrap hook
 - [TypeScript](https://www.typescriptlang.org/) in strict mode (`strict: true`, zero `any`)
 - Angular Router (guards, resolvers), Reactive Forms only (strictly typed, no template-driven forms)
-- [Vitest](https://vitest.dev/) for unit tests (197 specs across services, pipes, validators,
+- [Vitest](https://vitest.dev/) for unit tests (207 specs across services, pipes, validators,
   forms and routed pages)
 - [ESLint](https://eslint.org/) with [angular-eslint](https://github.com/angular-eslint/angular-eslint)
   and [Prettier](https://prettier.io/)
@@ -168,6 +189,8 @@ src/app/
 │       ├── escalations-page/         # hierarchical ladder steps
 │       ├── threat-assessments-page/  # DCJS-inspired evaluations
 │       └── legal-elements-page/      # four-section reference bundles
+│   ├── ai/                           # Phase 3 — AI Agent placeholder
+│       └── agent-page/               # echo-only prompt/chat (/ai-agent)
 └── shared/                           # contact card, confirm dialog, pager
 ```
 
@@ -207,13 +230,11 @@ Key decisions:
   the header and persisted per user; English is the fallback. Category names are bilingual too:
   a category stores both an English and a French name (`BilingualText`), and the `catName` pipe
   renders the right one for the active language.
-- **Two product lines, one codebase** — the ERM (Phase 2) lives under its own `/erm/*` route
-  subtree and feature folder, with domain services (`CaseService`, `EscalationService`,
-  `ThreatAssessmentService`, `LegalElementsService`) that attach to contacts via `contactId`.
-  `BrandService` flips the header brand (logo + title) by observing the activated URL, so the
-  ERM presents itself as a distinct product ("Connects ERM") without duplicating the shell.
-  Phase-1 code was not rewritten to host any of it: the models were merely declared ahead of
-  time and the router/sidebar extended.
+- **Three product lines, one codebase** — the ERM (Phase 2) lives under its own `/erm/*` route
+  subtree and the AI Agent (Phase 3) under `/ai-agent`, each with domain services that attach to
+  contacts via `contactId`. `BrandService` flips the header brand (logo, title and tagline) by
+  observing the activated URL, so each line presents its own identity without duplicating the
+  shell. Phase-1 code was not rewritten to host them: the routers/sidebars were extended.
 
 ## Provenance
 

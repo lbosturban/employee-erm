@@ -358,3 +358,9 @@
     padding: var(--space-3);
   }
 }
+
+/* AI Agent sidebar CTA: same shape as the CRM CTAs, AI accent. */
+.ai-cta {
+  border-color: var(--accent-soft, var(--border));
+  text-align: center;
+}
