@@ -1,18 +1,25 @@
 # Contacts ERM
 
-An enterprise-grade, fully local CRM/ERM workbench for managing contacts, the companies they
-belong to, and the classifications that organize them — built with **Angular 22** and
-**TypeScript (strict mode)**.
+An enterprise-grade (albeit in an academic exercise setup), fully local CRM/ERM workbench
+for managing contacts, the companies they belong to, and the classifications
+that organize them — built with **Angular 22** and **TypeScript (strict mode)**.
 
 It runs entirely in the browser: **no backend, no database** — all data is persisted in
-`localStorage` behind a swappable persistence layer. The codebase is already structured for the
-next phase of the product: an **Employee Relationship Management (ERM)** and legal-risk platform,
+`localStorage` behind a swappable persistence layer.
+The codebase is already structured around a **Contact Relationship Management (contact-CRM)** code for the
+new **Employee Relationship Management (Employee-ERM)** and legal-risk platform,
 whose future modules (Cases, Escalations, Threat Assessments, Legal Elements) will plug into any
 contact via its `contactId` without rewriting what exists today.
+
+You can use this template as-is without any guarantee (please rechecks everything as it is on your own risks)
+in order to make your own enterprise-grade ETM, just need to upgrade the services in order to plug your company
+information system (employee DB, user directory, legal database/inforamtions).
 
 ## Project Description
 
 ### Phase 1 — Contact CRM (current)
+
+The CRM part of the site has some data examples, helping visualize:
 
 - **Contacts** — full CRUD with a dual-mode name model: enter a direct full name *or* a
   structured breakdown honoring international naming conventions (titles, multiple middle names,
@@ -49,12 +56,10 @@ can be appreciated immediately.
 
 ### Phase 2 — ERM & legal-risk platform (current)
 
-The brand in the header **switches automatically with the product line**: navigating to any
-`/erm/*` section swaps the logo (`connects-erm.svg`), the title to **"Connects ERM"** and the
-tagline to *"Manage HR connections"*; any Phase-1 navigation switches back to **"Contacts ERM"**
-(`contacts-erm.svg`). See Phase 3 below for the third brand mode.
+The brand in the header **switches automatically with the site's section**: navigating to any
+menu section pages swaps the logo, the title to and the tagline to the corresponding one.
 
-The four sidebar ERM entries are live, lazy-loaded routes under `/erm`:
+The four sidebar ERM entries are live, lazy-loaded with examples:
 
 - **Cases** (`/erm/cases`) — workplace **irritants, conflicts, complaints and mediations**
   attached to any number of contacts (checkbox picker, at least one required) with an optional
@@ -239,8 +244,7 @@ Key decisions:
 ## Provenance
 
 Contacts ERM was created by cloning the earlier `contact-crm` training project and rebranding it:
-same architecture and feature set, new name (`contacts-ERM`), new storage namespace
-(`contacts-erm:*`), new export filename (`contacts-erm-export.json`) and a rebranded header asset.
+same architecture and feature set, new name (`contacts-ERM`), new mechanics, for the ERM / AI part.
 
 ## Author
 
