@@ -12,7 +12,7 @@ whose future modules (Cases, Escalations, Threat Assessments, Legal Elements) wi
 contact via its `contactId` without rewriting what exists today.
 
 You can use this template as-is without any guarantee (please rechecks everything as it is on your own risks)
-in order to make your own enterprise-grade ETM, just need to upgrade the services in order to plug your company
+in order to make your own enterprise-grade ERM, just need to upgrade the services in order to plug your company
 information system (employee DB, user directory, legal database/inforamtions).
 
 ## Project Description
