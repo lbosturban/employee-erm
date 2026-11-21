@@ -62,11 +62,14 @@
   font-size: 0.9rem;
 }
 
-/* One instruction and its simulated exchange: chat bubble, left-justified. */
+/* One echoed prompt: chat bubble docked on the right half only. */
 .agent-entry {
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
+  align-self: flex-end;
+  width: 50%;
+  min-width: 320px;
   padding: var(--space-2) var(--space-3);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -76,14 +79,6 @@
 
 .agent-entry.expanded {
   border-color: var(--accent, var(--border));
-}
-
-.agent-entry-body {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
 }
 
 .agent-entry-text {
@@ -109,13 +104,39 @@
   white-space: pre;
 }
 
-/* Simulated agent indicators, "à la Mistral Vibe". */
+/* Simulated agent response: its own left-justified block, mirroring the
+   prompt bubbles. It borrows the banner look of the page title (same
+   bordered, soft-accent surface) but keeps a normal body font, and uses
+   the free left half of the chat space the prompts leave empty. */
+.agent-response {
+  align-self: flex-start;
+  width: 50%;
+  min-width: 320px;
+  background: var(--accent-soft, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.agent-response-text {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Thinking indicator, "à la Mistral Vibe", shown while the stub
+   round-trip is pending. */
 .agent-thinking {
   margin: 0;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   font-style: italic;
   color: var(--text-muted);
   animation: agent-thinking-fade 0.3s ease-in;
@@ -151,18 +172,6 @@
   to {
     opacity: 1;
   }
-}
-
-/* Simulated stub response, visually distinct from the echoed prompt. */
-.agent-response {
-  margin: 0;
-  font-size: 0.85rem;
-  line-height: 1.5;
-  color: var(--text-muted);
-  border-left: 3px solid var(--accent, var(--border));
-  padding-left: var(--space-2);
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 /* Unfold/refold toggle, docked on the right INSIDE the entry. */
@@ -254,5 +263,12 @@
   .agent-column {
     margin-left: 0;
     width: 100%;
+  }
+
+  /* Both sides of the conversation take the full width back. */
+  .agent-entry,
+  .agent-response {
+    width: 100%;
+    min-width: 0;
   }
 }

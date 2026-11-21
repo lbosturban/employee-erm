@@ -5,51 +5,56 @@
   <h1 id="agent-title" class="agent-notice">{{ 'ai.notice' | t }}</h1>
   <p class="agent-notice-invite">{{ 'ai.noticeInvite' | t }}</p>
 
-  <div class="agent-column">
-    <h2 class="agent-transcript-title">{{ 'ai.transcript' | t }}</h2>
+  <h2 class="agent-transcript-title">{{ 'ai.transcript' | t }}</h2>
 
-    <div class="agent-transcript" role="log" aria-live="polite">
-      @if (entries().length === 0) {
-        <p class="agent-empty">{{ 'ai.empty' | t }}</p>
-      } @else {
-        @for (entry of entries(); track entry.id) {
-          <article class="agent-entry" [class.expanded]="entry.expanded">
-            <div class="agent-entry-body">
-              <p
-                class="agent-entry-text"
-                [class.folded]="!entry.expanded"
-                [class.multiline]="entry.text.includes('\n')"
-              >
-                {{ entry.text }}
-              </p>
+  <!-- Transcript spanning the full page: the echoed prompts stay
+       right-justified bubbles, while each simulated response lands on
+       its own left-justified block, banner-style (like the title above)
+       but with a normal body font — a conversation across the free
+       middle space, "à la Mistral Vibe". Responses never fold; only
+       the prompt echo does. -->
+  <div class="agent-transcript" role="log" aria-live="polite">
+    @if (entries().length === 0) {
+      <p class="agent-empty">{{ 'ai.empty' | t }}</p>
+    } @else {
+      @for (entry of entries(); track entry.id) {
+        <article class="agent-entry" [class.expanded]="entry.expanded">
+          <p
+            class="agent-entry-text"
+            [class.folded]="!entry.expanded"
+            [class.multiline]="entry.text.includes('\n')"
+          >
+            {{ entry.text }}
+          </p>
+          <button
+            type="button"
+            class="agent-toggle"
+            (click)="toggleExpanded(entry.id)"
+            [attr.aria-expanded]="entry.expanded"
+            [attr.aria-label]="(entry.expanded ? 'ai.refold' : 'ai.unfold') | t"
+            [title]="(entry.expanded ? 'ai.refold' : 'ai.unfold') | t"
+          >
+            <span aria-hidden="true">{{ entry.expanded ? '⌃' : '⌄' }}</span>
+          </button>
+        </article>
 
-              @if (entry.thinking) {
-                <!-- Simulated agent round-trip: thinking indicator first,
-                     "à la Mistral Vibe", then the stub response lands. -->
-                <p class="agent-thinking" aria-live="polite">
-                  <span class="agent-thinking-dot" aria-hidden="true"></span>
-                  {{ 'ai.thinking' | t }}
-                </p>
-              } @else {
-                <p class="agent-response">{{ entry.response }}</p>
-              }
-            </div>
-            <button
-              type="button"
-              class="agent-toggle"
-              (click)="toggleExpanded(entry.id)"
-              [attr.aria-expanded]="entry.expanded"
-              [attr.aria-label]="(entry.expanded ? 'ai.refold' : 'ai.unfold') | t"
-              [title]="(entry.expanded ? 'ai.refold' : 'ai.unfold') | t"
-            >
-              <span aria-hidden="true">{{ entry.expanded ? '⌃' : '⌄' }}</span>
-            </button>
-          </article>
-        }
+        <!-- Simulated agent response on its own block (stub). -->
+        <div class="agent-response">
+          @if (entry.thinking) {
+            <p class="agent-thinking">
+              <span class="agent-thinking-dot" aria-hidden="true"></span>
+              {{ 'ai.thinking' | t }}
+            </p>
+          } @else {
+            <p class="agent-response-text">{{ entry.response }}</p>
+          }
+        </div>
       }
-    </div>
+    }
+  </div>
 
-    <!-- Always-ready prompt at the bottom of the column, chat style. -->
+  <!-- Always-ready prompt at the bottom of the column, chat style. -->
+  <div class="agent-column agent-prompt-column">
     <div class="agent-prompt">
       <label class="agent-prompt-label" for="agent-prompt-input">
         {{ 'ai.currentPrompt' | t }}

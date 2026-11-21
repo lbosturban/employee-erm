@@ -128,12 +128,14 @@ describe('AgentPage', () => {
       const thinking = fixture.nativeElement.querySelector('.agent-thinking') as HTMLElement;
       expect(thinking).not.toBeNull();
       expect(thinking.textContent).toContain('Thinking');
-      expect(fixture.nativeElement.querySelector('.agent-response')).toBeNull();
+      expect(fixture.nativeElement.querySelector('.agent-response-text')).toBeNull();
 
       // After the simulated delay the response lands, quoting the instruction.
       vi.advanceTimersByTime(900);
       fixture.detectChanges();
-      const response = fixture.nativeElement.querySelector('.agent-response') as HTMLElement;
+      const response = fixture.nativeElement.querySelector(
+        '.agent-response-text',
+      ) as HTMLElement;
       expect(response).not.toBeNull();
       expect(response.textContent).toContain('Simulated response (stub)');
       expect(response.textContent).toContain('run the ERM diagnostic');
