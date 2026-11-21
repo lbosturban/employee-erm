@@ -1,4 +1,4 @@
-# Contacts ERM
+# Employee ERM
 
 An enterprise-grade (albeit in an academic exercise setup), fully local CRM/ERM workbench
 for managing contacts, the companies they belong to, and the classifications
