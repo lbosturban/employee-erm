@@ -8,6 +8,7 @@ type Dictionary = Record<string, string>;
 /** English translations, used as the fallback language. */
 const EN: Dictionary = {
   'app.title': 'Contacts ERM',
+  'app.titleErm': 'Connects ERM',
   'app.tagline': 'Manage HR contacts cleanly',
   'nav.dashboard': 'Dashboard',
   'nav.contacts': 'Contacts',

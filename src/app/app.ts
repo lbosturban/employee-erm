@@ -15,6 +15,7 @@ import { CategoryService } from './core/services/category.service';
 import { DataTransferService } from './core/services/data-transfer.service';
 import { VCardService, toContactDraft, ParsedVCard } from './core/services/vcard.service';
 import { CompanyService } from './core/services/company.service';
+import { BrandService } from './core/services/brand.service';
 import { Contact } from './core/models/contact.model';
 import { DataSnapshot } from './core/models/snapshot.model';
 import { SCHEMA_VERSION } from './core/services/migration.service';
@@ -41,6 +42,8 @@ import { InitialsPipe } from './core/pipes/initials.pipe';
 export class App {
   protected readonly themeService = inject(ThemeService);
   protected readonly i18n = inject(I18nService);
+  /** Brand identity that flips to "Connects ERM" while an /erm/* route is active. */
+  protected readonly brand = inject(BrandService);
   private readonly contactService = inject(ContactService);
   private readonly categoryService = inject(CategoryService);
   private readonly companyService = inject(CompanyService);

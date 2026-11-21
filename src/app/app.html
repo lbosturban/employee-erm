@@ -2,10 +2,12 @@
 
 <div class="app-shell">
   <header class="app-header">
-    <a routerLink="/" class="brand">
-      <img class="brand-mark" src="contacts-erm.svg" alt="" aria-hidden="true" />
+    <!-- Brand flips with the active product line (CRM ↔ ERM /erm/* routes);
+         the link itself always returns to the CRM dashboard. -->
+    <a routerLink="/" class="brand" [attr.aria-label]="brand.titleKey() | t">
+      <img class="brand-mark" [src]="brand.logo()" alt="" aria-hidden="true" />
       <span class="brand-text">
-        <strong>{{ 'app.title' | t }}</strong>
+        <strong>{{ brand.titleKey() | t }}</strong>
         <small>{{ 'app.tagline' | t }}</small>
       </span>
     </a>
