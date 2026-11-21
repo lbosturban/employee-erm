@@ -371,11 +371,16 @@
     display: contents;
   }
 
-  /* The section title becomes the fold toggle for its group. */
+  /* The section title becomes the fold toggle for its group. The
+     ".nav-section:not(:first-child)" prefix is repeated so this reset
+     outranks the desktop group-separator rule (equal specificity, but
+     later in source order). */
+  .nav-section:not(:first-child) .sidebar-group,
   .sidebar-group {
     width: auto;
     padding: 6px 12px;
     border: 1px solid var(--border);
+    border-top: 1px solid var(--border);
     border-radius: var(--radius);
     background: var(--surface);
     color: var(--text);
