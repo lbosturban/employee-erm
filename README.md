@@ -47,28 +47,6 @@ Deleting a category or company is blocked while contacts still reference it, wit
 message. Sample data (9 contacts, 7 companies, 4 categories) is seeded on first run so the layout
 can be appreciated immediately.
 
-### Phase 3 — AI Agent (current, placeholder)
-
-A third sidebar group, **AI Agent**, holds a single *Start with AI Agent* button that routes to
-`/ai-agent`. The header brand switches to a third identity there: **ERM AI Agent** with its own
-logo file (`ai-agent.svg`, placeholder art duplicated from the ERM mark until the final logo
-replaces it) and the tagline *"Facilitate HR connections"* ("*Facilitez les relations RH*" in
-French). Each product line now has its own logo, title **and** tagline:
-
-| Section | Logo | Title | Tagline |
-|---|---|---|---|
-| CRM (`/…`) | `contacts-erm.svg` | Contacts ERM | Manage HR contacts cleanly |
-| ERM (`/erm/*`) | `connects-erm.svg` | Connects ERM | Manage HR connections |
-| AI Agent (`/ai-agent`) | `ai-agent.svg` | ERM AI Agent | Facilitate HR connections |
-
-The `/ai-agent` page is an honest placeholder: a banner states that *"The AI Agent functionality
-is not available yet. The prompt will only echo instructions as stated."* The chat column sits
-on the right half of the page. Submitting (Enter, or the send button — Shift+Enter inserts a
-newline) echoes the instruction into the transcript, left-justified chat style, and a fresh
-empty prompt is ready below. Previous instructions fold to their first line with an
-unfold/refold toggle docked on the right inside the entry, and overflowing words are clipped
-with an ellipsis.
-
 ### Phase 2 — ERM & legal-risk platform (current)
 
 The brand in the header **switches automatically with the product line**: navigating to any
@@ -102,6 +80,28 @@ The four sidebar ERM entries are live, lazy-loaded routes under `/erm`:
 All Phase-2 entities ride along in the JSON export/import (fully schema- and foreign-key
 validated) and are seeded with sample data: 4 cases, 2 escalations, 1 DCJS-structured threat
 assessment and 1 legal-elements bundle.
+
+### Phase 3 — AI Agent (current, placeholder)
+
+A third sidebar group, **AI Agent**, holds a single *Start with AI Agent* button that routes to
+`/ai-agent`. The header brand switches to a third identity there: **ERM AI Agent** with its own
+logo file (`ai-agent.svg`, placeholder art duplicated from the ERM mark until the final logo
+replaces it) and the tagline *"Facilitate HR connections"* ("*Facilitez les relations RH*" in
+French). Each product line now has its own logo, title **and** tagline:
+
+| Section | Logo | Title | Tagline |
+|---|---|---|---|
+| CRM (`/…`) | `contacts-erm.svg` | Contacts ERM | Manage HR contacts cleanly |
+| ERM (`/erm/*`) | `connects-erm.svg` | Connects ERM | Manage HR connections |
+| AI Agent (`/ai-agent`) | `ai-agent.svg` | ERM AI Agent | Facilitate HR connections |
+
+The `/ai-agent` page is an honest placeholder: a banner states that *"The AI Agent functionality
+is not available yet. The prompt will only echo instructions as stated."* The chat column sits
+on the right half of the page. Submitting (Enter, or the send button — Shift+Enter inserts a
+newline) echoes the instruction into the transcript, left-justified chat style, and a fresh
+empty prompt is ready below. Previous instructions fold to their first line with an
+unfold/refold toggle docked on the right inside the entry, and overflowing words are clipped
+with an ellipsis.
 
 ## Technologies
 
