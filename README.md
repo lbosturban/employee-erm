@@ -47,22 +47,40 @@ Deleting a category or company is blocked while contacts still reference it, wit
 message. Sample data (9 contacts, 7 companies, 4 categories) is seeded on first run so the layout
 can be appreciated immediately.
 
-### Phase 2 — ERM & legal-risk platform (prepared, not yet implemented)
+### Phase 2 — ERM & legal-risk platform (current)
 
-The navigation already separates the CRM from the future **ERM** section, whose sidebar entries
-are visible but disabled, and the contact detail page shows a disabled
-*"ERM Case History — Phase 2"* tab. The typed anchors for the future domain are in
-`src/app/core/models/phase2/`:
+The brand in the header **switches automatically with the product line**: navigating to any
+`/erm/*` section swaps the logo (`connects-erm.svg`) and the title to **"Connects ERM"**; any
+Phase-1 navigation switches back to **"Contacts ERM"** (`contacts-erm.svg`). The tagline stays
+shared. The `connects-erm.svg` file is clearly-marked placeholder art until the final logo
+replaces it under the same filename.
 
-- **Cases** — workplace irritants, conflicts, complaints and mediations, with a map of the
-  contacts concerned (`contactId`-attached).
-- **Escalations** — source → target escalation chains (Superiors → Management → HR → Legal
-  Department) with purposes, referencing mediations and linked to contacts on both ends.
-- **Threat Assessments** — structured on the sections of the
-  [Virginia DCJS threat assessment and management form](https://www.dcjs.virginia.gov/sites/dcjs.virginia.gov/files/law-enforcement/files/vcscs/threat_assessment_and_management_form_-_pdf.pdf).
-- **Legal Elements** — templates with `Contracts`, `Legal work code`, `Internal structural legal
-  elements` and `Further Legal Documentation` sections, designed to link to external legal
-  databases later.
+The four sidebar ERM entries are live, lazy-loaded routes under `/erm`:
+
+- **Cases** (`/erm/cases`) — workplace **irritants, conflicts, complaints and mediations**
+  attached to any number of contacts (checkbox picker, at least one required) with an optional
+  company link and a lifecycle status (`Open` → `Observed` → `Resolved`). Kind/status filters,
+  modal CRUD, confirm-dialog deletion, dangling contact ids rendered as "(unknown contact)".
+- **Escalations** (`/erm/escalations`) — hierarchical steps on the ladder
+  **Superiors → Management → HR → Legal Department**, from a *source* contact to a *target*
+  contact (a group validator refuses when the two are identical), a **purpose** classification
+  (information, protection, resolution, sanction, legal action), optional notes and an optional
+  reminder of the **mediation case** that motivated the step.
+- **Threat Assessments** (`/erm/threat-assessments`) — company-threat evaluations structured
+  after the ten sections of the
+  [Virginia DCJS threat assessment and management form](https://www.dcjs.virginia.gov/sites/dcjs.virginia.gov/files/law-enforcement/files/vcscs/threat_assessment_and_management_form_-_pdf.pdf):
+  per-section findings + severity (`unknown` → `critical`) and a roll-up **overall threat level**
+  (`no-risk`, `minor`, `moderate`, `major`, `imminent`) measuring reputation, PR, legal and
+  financial risk.
+- **Legal Elements** (`/erm/legal-elements`) — a deliberately template-only module linking to
+  (future) legal-elements databases: per-contact bundles of references organized into the four
+  fixed sections **Contracts**, **Legal work code**, **Internal structural legal elements** and
+  **Further legal documentation**, each reference recording a label, a physical/digital location
+  and an optional external URL.
+
+All Phase-2 entities ride along in the JSON export/import (fully schema- and foreign-key
+validated) and are seeded with sample data: 4 cases, 2 escalations, 1 DCJS-structured threat
+assessment and 1 legal-elements bundle.
 
 ## Technologies
 
@@ -70,7 +88,7 @@ are visible but disabled, and the contact detail page shows a disabled
   new control flow (`@if` / `@for`), lazy-loaded routes, `APP_INITIALIZER` bootstrap hook
 - [TypeScript](https://www.typescriptlang.org/) in strict mode (`strict: true`, zero `any`)
 - Angular Router (guards, resolvers), Reactive Forms only (strictly typed, no template-driven forms)
-- [Vitest](https://vitest.dev/) for unit tests (132 specs across services, pipes, validators,
+- [Vitest](https://vitest.dev/) for unit tests (197 specs across services, pipes, validators,
   forms and routed pages)
 - [ESLint](https://eslint.org/) with [angular-eslint](https://github.com/angular-eslint/angular-eslint)
   and [Prettier](https://prettier.io/)
@@ -112,16 +130,21 @@ src/app/
 │   │   ├── company.model.ts          # Company + size/structure/sector catalogues
 │   │   ├── category.model.ts         # bilingual category types
 │   │   ├── snapshot.model.ts         # versioned full-database snapshot
-│   │   └── phase2/                   # ERM anchor types (Case, Escalation,
+│   │   └── phase2/                   # ERM domain types (Case, Escalation,
 │   │                                 #   ThreatAssessment, LegalElements)
 │   ├── services/
 │   │   ├── storage.service.ts        # safe namespaced localStorage + versioned
 │   │   │                             #   JSON import/export
 │   │   ├── migration.service.ts      # SCHEMA_VERSION check, wipe & reseed on
 │   │   │                             #   mismatch (run via APP_INITIALIZER)
+│   │   ├── brand.service.ts          # CRM ↔ ERM brand switching on /erm/* routes
 │   │   ├── contact.service.ts        # signal state + token-aware search + CRUD
 │   │   ├── company.service.ts        # company state, usage counts, guarded delete
 │   │   ├── category.service.ts       # category state + usage counts + guarded delete
+│   │   ├── case.service.ts           # ERM cases (Phase 2)
+│   │   ├── escalation.service.ts     # ERM escalation steps (Phase 2)
+│   │   ├── threat-assessment.service.ts  # ERM threat evaluations (Phase 2)
+│   │   ├── legal-elements.service.ts # ERM legal reference bundles (Phase 2)
 │   │   ├── data-transfer.service.ts  # schema-validated JSON export / import
 │   │   ├── vcard.service.ts          # vCard 4.0 (RFC 6350) export + import
 │   │   ├── seed-data.ts              # sample contacts, companies, categories
@@ -139,7 +162,12 @@ src/app/
 │   ├── contacts/                     # list (+filters/pagination), form, detail
 │   ├── categories/                   # list, form (create/edit), detail
 │   ├── companies/                    # modal-CRUD registry page
-│   └── favorites/
+│   ├── favorites/
+│   └── erm/                          # Phase 2 — ERM product line (/erm/*)
+│       ├── cases-page/               # irritants, conflicts, complaints, mediations
+│       ├── escalations-page/         # hierarchical ladder steps
+│       ├── threat-assessments-page/  # DCJS-inspired evaluations
+│       └── legal-elements-page/      # four-section reference bundles
 └── shared/                           # contact card, confirm dialog, pager
 ```
 
@@ -179,10 +207,13 @@ Key decisions:
   the header and persisted per user; English is the fallback. Category names are bilingual too:
   a category stores both an English and a French name (`BilingualText`), and the `catName` pipe
   renders the right one for the active language.
-- **Phase-2 readiness** — ERM anchors live in `core/models/phase2/`, are typed but carry no
-  runtime behavior, and each future module will register as its own lazy-loaded feature routing
-  to `/erm/*` and attaching to contacts via `contactId`. Nothing in Phase 1 will need rewriting
-  to host them.
+- **Two product lines, one codebase** — the ERM (Phase 2) lives under its own `/erm/*` route
+  subtree and feature folder, with domain services (`CaseService`, `EscalationService`,
+  `ThreatAssessmentService`, `LegalElementsService`) that attach to contacts via `contactId`.
+  `BrandService` flips the header brand (logo + title) by observing the activated URL, so the
+  ERM presents itself as a distinct product ("Connects ERM") without duplicating the shell.
+  Phase-1 code was not rewritten to host any of it: the models were merely declared ahead of
+  time and the router/sidebar extended.
 
 ## Provenance
 
