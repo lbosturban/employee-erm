@@ -149,8 +149,12 @@
 
 .header-tools {
   display: flex;
+  align-items: center;
   gap: var(--space-2);
   flex-wrap: wrap;
+  /* Absorbs the free flex space so every header control to the right of
+     the search bar sticks to the trailing edge (theme toggle top-right). */
+  margin-left: auto;
 }
 
 .icon-btn {
