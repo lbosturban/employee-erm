@@ -1,0 +1,42 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'favorites.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'favorites.subtitle' | t }}</p>
+    </div>
+  </header>
+
+  <input
+    type="search"
+    class="field favorites-search"
+    appDebounceInput
+    (debouncedInput)="search.set($event)"
+    [value]="search()"
+    [placeholder]="'contacts.search' | t"
+    aria-label="Search favorites"
+  />
+
+  @if (favorites().length === 0) {
+    <p class="empty-state">{{ 'favorites.empty' | t }}</p>
+  } @else {
+    <div class="card-grid" role="list">
+      @for (contact of favorites(); track contact.id) {
+        <app-contact-card
+          [contact]="contact"
+          [searchTerm]="search()"
+          (toggleFavorite)="contactService.toggleFavorite($event)"
+          (delete)="pendingDeletion.set(contact)"
+        />
+      }
+    </div>
+  }
+
+  @if (pendingDeletion(); as contact) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteContactTitle' | t"
+      [message]="'confirm.deleteContactMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+</section>

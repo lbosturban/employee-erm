@@ -1,0 +1,83 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'dashboard.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'dashboard.subtitle' | t }}</p>
+    </div>
+    <a routerLink="/contacts/new" class="btn btn-primary">{{ 'nav.newContact' | t }}</a>
+  </header>
+
+  <div class="stat-grid">
+    <a class="stat-card" routerLink="/contacts">
+      <span class="stat-value">{{ contactService.total() }}</span>
+      <span class="stat-label">{{ 'dashboard.totalContacts' | t }}</span>
+    </a>
+    <a class="stat-card" routerLink="/favorites">
+      <span class="stat-value">{{ contactService.favoriteCount() }}</span>
+      <span class="stat-label">{{ 'dashboard.totalFavorites' | t }}</span>
+    </a>
+    <a class="stat-card" routerLink="/categories">
+      <span class="stat-value">{{ categoryService.total() }}</span>
+      <span class="stat-label">{{ 'dashboard.totalCategories' | t }}</span>
+    </a>
+  </div>
+
+  <div class="dashboard-columns">
+    <div class="card panel">
+      <h2>{{ 'dashboard.latest' | t }}</h2>
+      @if (contactService.latest().length === 0) {
+        <p class="muted">{{ 'contacts.empty' | t }}</p>
+      } @else {
+        <ul class="latest-list">
+          @for (contact of contactService.latest(); track contact.id) {
+            <li>
+              <span class="avatar avatar-sm" aria-hidden="true">
+                {{ contact.firstName | initials: contact.lastName }}
+              </span>
+              <a [routerLink]="['/contacts', contact.id]" class="latest-link">
+                {{ contact.firstName | fullName: contact.lastName }}
+              </a>
+              @if (contact.favorite) {
+                <span class="star-inline" aria-hidden="true">★</span>
+              }
+            </li>
+          }
+        </ul>
+      }
+      <a routerLink="/contacts" class="see-all">{{ 'dashboard.seeAll' | t }} →</a>
+    </div>
+
+    <div class="card panel">
+      <h2>{{ 'dashboard.byCategory' | t }}</h2>
+      @if (categoryStats().length === 0) {
+        <p class="muted">{{ 'categories.empty' | t }}</p>
+      } @else {
+        <ul class="cat-stats">
+          @for (stat of categoryStats(); track stat.id) {
+            <li>
+              <div class="cat-stat-head">
+                <span class="dot" [style.background-color]="stat.color"></span>
+                <span>{{ stat | catName }}</span>
+                <span class="cat-count">{{ stat.count }} {{ 'contacts.count' | t }}</span>
+              </div>
+              <div
+                class="bar-track"
+                role="img"
+                [attr.aria-label]="(stat | catName) + ': ' + stat.count"
+              >
+                <div
+                  class="bar"
+                  [style.width.%]="
+                    maxCategoryCount() === 0 ? 0 : (stat.count / maxCategoryCount()) * 100
+                  "
+                  [style.background-color]="stat.color"
+                ></div>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+      <p class="muted">{{ 'dashboard.uncategorized' | t }} : {{ uncategorizedCount() }}</p>
+    </div>
+  </div>
+</section>

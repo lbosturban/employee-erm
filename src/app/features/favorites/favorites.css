@@ -1,0 +1,10 @@
+.favorites-search {
+  max-width: 360px;
+  margin-bottom: var(--space-4);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}

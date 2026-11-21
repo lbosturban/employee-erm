@@ -1,0 +1,57 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.toolbar .field {
+  flex: 1 1 220px;
+}
+
+.toolbar-field {
+  display: inline-flex;
+}
+
+.toolbar-data {
+  display: flex;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.file-label {
+  position: relative;
+  overflow: hidden;
+}
+
+.notice {
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: 0.9rem;
+}
+
+.notice-success {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.notice-error {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}

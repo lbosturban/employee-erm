@@ -1,0 +1,68 @@
+<section class="page page-narrow">
+  <nav class="breadcrumb">
+    <a routerLink="/categories">{{ 'categories.title' | t }}</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ (isEdit ? 'form.editCategory' : 'form.createCategory') | t }}</span>
+  </nav>
+
+  <h1>{{ (isEdit ? 'form.editCategory' : 'form.createCategory') | t }}</h1>
+
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">{{ message }}</p>
+  }
+
+  <form class="card form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <label class="form-field">
+      <span>{{ 'categories.nameEn' | t }} <em aria-hidden="true">*</em></span>
+      <input
+        type="text"
+        class="field"
+        formControlName="nameEn"
+        appAutofocus
+        [attr.aria-invalid]="hasError('nameEn')"
+        [attr.aria-describedby]="hasError('nameEn') ? 'nameEn-error' : null"
+      />
+      @if (hasError('nameEn'); as message) {
+        <span class="form-error" id="nameEn-error" role="alert">{{ message }}</span>
+      }
+    </label>
+
+    <label class="form-field">
+      <span>{{ 'categories.nameFr' | t }} <em aria-hidden="true">*</em></span>
+      <input
+        type="text"
+        class="field"
+        formControlName="nameFr"
+        [attr.aria-invalid]="hasError('nameFr')"
+        [attr.aria-describedby]="hasError('nameFr') ? 'nameFr-error' : null"
+      />
+      @if (hasError('nameFr'); as message) {
+        <span class="form-error" id="nameFr-error" role="alert">{{ message }}</span>
+      }
+    </label>
+
+    <div class="form-field">
+      <label for="category-color">{{ 'categories.color' | t }} <em aria-hidden="true">*</em></label>
+      <div class="color-row">
+        <input
+          id="category-color"
+          type="color"
+          class="color-picker"
+          formControlName="color"
+          [attr.aria-invalid]="hasError('color')"
+        />
+        <input type="text" class="field" formControlName="color" />
+      </div>
+      @if (hasError('color'); as message) {
+        <span class="form-error" role="alert">{{ message }}</span>
+      }
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" (click)="onCancel()">
+        {{ 'form.cancel' | t }}
+      </button>
+      <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+    </div>
+  </form>
+</section>

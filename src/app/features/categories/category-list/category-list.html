@@ -1,0 +1,64 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'categories.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'categories.subtitle' | t }}</p>
+    </div>
+    <a routerLink="/categories/new" class="btn btn-primary">+ {{ 'categories.new' | t }}</a>
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" class="notice-close" (click)="dismissError()" aria-label="Close">
+        ×
+      </button>
+    </p>
+  }
+
+  @if (categoryService.categories().length === 0) {
+    <p class="empty-state">{{ 'categories.empty' | t }}</p>
+  } @else {
+    <div class="category-grid">
+      @for (category of categoryService.categories(); track category.id) {
+        <article class="card category-card">
+          <div class="category-head">
+            <span class="dot" [style.background-color]="category.color" aria-hidden="true"></span>
+            <h2>
+              <a [routerLink]="['/categories', category.id]">{{ category | catName }}</a>
+            </h2>
+            <span class="cat-count">
+              {{ categoryService.usageByCategory().get(category.id) ?? 0 }}
+              {{ 'contacts.count' | t }}
+            </span>
+          </div>
+          <div class="category-actions">
+            <a class="btn btn-ghost" [routerLink]="['/categories', category.id]">
+              {{ 'contacts.detail' | t }}
+            </a>
+            <a class="btn btn-ghost" [routerLink]="['/categories', category.id, 'edit']">
+              {{ 'categories.edit' | t }}
+            </a>
+            <button
+              type="button"
+              class="btn btn-danger"
+              [attr.aria-label]="'categories.delete' | t"
+              (click)="pendingDeletion.set(category)"
+            >
+              {{ 'contacts.delete' | t }}
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (pendingDeletion(); as category) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteCategoryTitle' | t"
+      [message]="'confirm.deleteCategoryMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+</section>

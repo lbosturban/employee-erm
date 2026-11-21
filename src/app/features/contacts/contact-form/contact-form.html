@@ -1,0 +1,115 @@
+<section class="page page-narrow">
+  <nav class="breadcrumb">
+    <a routerLink="/contacts">{{ 'contacts.title' | t }}</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ (isEdit ? 'form.editContact' : 'form.createContact') | t }}</span>
+  </nav>
+
+  <h1>{{ (isEdit ? 'form.editContact' : 'form.createContact') | t }}</h1>
+
+  @if (savedMessage(); as message) {
+    <p class="notice notice-success" role="status">{{ message }}</p>
+  }
+
+  <form class="card form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.firstName' | t }} <em aria-hidden="true">*</em></span>
+        <input
+          type="text"
+          class="field"
+          formControlName="firstName"
+          appAutofocus
+          [attr.aria-invalid]="hasError('firstName')"
+          [attr.aria-describedby]="hasError('firstName') ? 'firstName-error' : null"
+        />
+        @if (hasError('firstName'); as message) {
+          <span class="form-error" id="firstName-error" role="alert">{{ message }}</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>{{ 'form.lastName' | t }} <em aria-hidden="true">*</em></span>
+        <input
+          type="text"
+          class="field"
+          formControlName="lastName"
+          [attr.aria-invalid]="hasError('lastName')"
+          [attr.aria-describedby]="hasError('lastName') ? 'lastName-error' : null"
+        />
+        @if (hasError('lastName'); as message) {
+          <span class="form-error" id="lastName-error" role="alert">{{ message }}</span>
+        }
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.email' | t }} <em aria-hidden="true">*</em></span>
+        <input
+          type="email"
+          class="field"
+          formControlName="email"
+          [attr.aria-invalid]="hasError('email')"
+          [attr.aria-describedby]="hasError('email') ? 'email-error' : null"
+        />
+        @if (hasError('email'); as message) {
+          <span class="form-error" id="email-error" role="alert">{{ message }}</span>
+        }
+      </label>
+
+      <label class="form-field">
+        <span>{{ 'form.phone' | t }} <em aria-hidden="true">*</em></span>
+        <input
+          type="tel"
+          class="field"
+          formControlName="phone"
+          [attr.aria-invalid]="hasError('phone')"
+          [attr.aria-describedby]="hasError('phone') ? 'phone-error' : null"
+        />
+        @if (hasError('phone'); as message) {
+          <span class="form-error" id="phone-error" role="alert">{{ message }}</span>
+        }
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.company' | t }}</span>
+        <input type="text" class="field" formControlName="company" />
+      </label>
+
+      <label class="form-field">
+        <span>{{ 'form.jobTitle' | t }}</span>
+        <input type="text" class="field" formControlName="jobTitle" />
+      </label>
+    </div>
+
+    <label class="form-field">
+      <span>{{ 'form.category' | t }}</span>
+      <select class="field" formControlName="categoryId">
+        <option value="">{{ 'contacts.uncategorized' | t }}</option>
+        @for (category of categoryService.categories(); track category.id) {
+          <option [value]="category.id">{{ category | catName }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="form-field">
+      <span>{{ 'form.notes' | t }}</span>
+      <textarea class="field" rows="4" formControlName="notes"></textarea>
+    </label>
+
+    <label class="checkbox">
+      <input type="checkbox" formControlName="favorite" />
+      <span>{{ 'form.favorite' | t }}</span>
+    </label>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-ghost" (click)="onCancel()">
+        {{ 'form.cancel' | t }}
+      </button>
+      <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,84 @@
+<a class="skip-link" href="#main">{{ 'app.title' | t }}</a>
+
+<div class="app-shell">
+  <header class="app-header">
+    <a routerLink="/" class="brand">
+      <img class="brand-mark" src="contacts-erm.svg" alt="" aria-hidden="true" />
+      <span class="brand-text">
+        <strong>{{ 'app.title' | t }}</strong>
+        <small>{{ 'app.tagline' | t }}</small>
+      </span>
+    </a>
+
+    <nav class="main-nav" aria-label="Main navigation">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        {{ 'nav.dashboard' | t }}
+      </a>
+      <a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | t }}</a>
+      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | t }}</a>
+      <a routerLink="/favorites" routerLinkActive="active">{{ 'nav.favorites' | t }}</a>
+      <a routerLink="/contacts/new" class="nav-cta">+ {{ 'nav.newContact' | t }}</a>
+      <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
+    </nav>
+
+    <div class="header-tools">
+      <button
+        type="button"
+        class="icon-btn import-btn"
+        (click)="vcardInput.click()"
+        [attr.aria-label]="'contacts.importVcard' | t"
+        [title]="'contacts.importVcard' | t"
+      >
+        <span aria-hidden="true">📥</span>
+        {{ 'contacts.importVcardLabel' | t }}
+      </button>
+      <input
+        #vcardInput
+        type="file"
+        class="visually-hidden-input"
+        accept=".vcf,.vcard,text/vcard"
+        (change)="importVCard($event)"
+        tabindex="-1"
+        aria-hidden="true"
+      />
+      <button
+        type="button"
+        class="icon-btn lang-btn"
+        (click)="i18n.toggleLanguage()"
+        [attr.aria-label]="'lang.switch' | t"
+        [title]="'lang.switch' | t"
+      >
+        @if (i18n.language() === 'fr') {
+          <span>🇫🇷 FR</span>
+        } @else {
+          <span>🇬🇧 EN</span>
+        }
+      </button>
+      <button
+        type="button"
+        class="icon-btn"
+        (click)="themeService.toggle()"
+        [attr.aria-label]="'theme.toggle' | t"
+        [title]="'theme.toggle' | t"
+      >
+        @if (themeService.theme() === 'light') {
+          <span class="dark-moon" aria-hidden="true">🌙</span>
+        } @else {
+          <span aria-hidden="true">☀️</span>
+        }
+      </button>
+    </div>
+  </header>
+
+  @if (toast(); as message) {
+    <p class="app-toast" role="status">{{ message }}</p>
+  }
+
+  <main id="main" class="app-main" tabindex="-1">
+    <router-outlet />
+  </main>
+
+  <footer class="app-footer">
+    <p>{{ 'footer.madeWith' | t }}</p>
+  </footer>
+</div>

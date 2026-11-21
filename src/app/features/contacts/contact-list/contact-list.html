@@ -1,0 +1,102 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'contacts.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'contacts.subtitle' | t }}</p>
+    </div>
+    <a routerLink="/contacts/new" class="btn btn-primary">+ {{ 'contacts.new' | t }}</a>
+  </header>
+
+  <div class="card toolbar" role="search">
+    <input
+      type="search"
+      class="field"
+      appDebounceInput
+      (debouncedInput)="search.set($event); resetPage()"
+      [value]="search()"
+      [placeholder]="'contacts.search' | t"
+      appAutofocus
+      aria-label="Search contacts"
+    />
+
+    <label class="toolbar-field">
+      <span class="visually-hidden">{{ 'contacts.category' | t }}</span>
+      <select
+        class="field"
+        [value]="categoryFilter()"
+        (change)="onCategoryChange($event); resetPage()"
+        aria-label="Filter by category"
+      >
+        <option value="">{{ 'contacts.allCategories' | t }}</option>
+        @for (category of categoryService.categories(); track category.id) {
+          <option [value]="category.id">{{ category | catName }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="checkbox">
+      <input
+        type="checkbox"
+        [checked]="favoritesOnly()"
+        (change)="favoritesOnly.set(!favoritesOnly()); resetPage()"
+      />
+      <span>★ {{ 'contacts.favoritesOnly' | t }}</span>
+    </label>
+
+    <label class="toolbar-field">
+      <span class="visually-hidden">{{ 'contacts.sort' | t }}</span>
+      <select class="field" [value]="sort()" (change)="onSortChange($event)">
+        @for (option of sortOptions; track option) {
+          <option [value]="option">{{ 'contacts.sort.' + option | t }}</option>
+        }
+      </select>
+    </label>
+
+    <div class="toolbar-data">
+      <button type="button" class="btn btn-ghost" (click)="exportJson()">
+        {{ 'contacts.export' | t }}
+      </button>
+      <label class="btn btn-ghost file-label">
+        {{ 'contacts.import' | t }}
+        <input type="file" accept="application/json" (change)="importJson($event)" hidden />
+      </label>
+    </div>
+  </div>
+
+  @if (importMessage(); as message) {
+    <p class="notice notice-success" role="status">{{ message }}</p>
+  }
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">{{ message }}</p>
+  }
+
+  @if (pageSlice().length === 0) {
+    <p class="empty-state">{{ 'contacts.empty' | t }}</p>
+  } @else {
+    <div class="card-grid" role="list">
+      @for (contact of pageSlice(); track contact.id) {
+        <app-contact-card
+          [contact]="contact"
+          [searchTerm]="search()"
+          (toggleFavorite)="contactService.toggleFavorite($event)"
+          (delete)="pendingDeletion.set(contact)"
+        />
+      }
+    </div>
+    <app-pager
+      [page]="page()"
+      [pageSize]="pageSize"
+      [totalItems]="filtered().length"
+      (pageChange)="onPageChange($event)"
+    />
+  }
+
+  @if (pendingDeletion(); as contact) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteContactTitle' | t"
+      [message]="'confirm.deleteContactMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+</section>

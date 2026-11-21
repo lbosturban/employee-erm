@@ -1,0 +1,97 @@
+<section class="page page-narrow">
+  <nav class="breadcrumb">
+    <a routerLink="/contacts">{{ 'contacts.title' | t }}</a>
+    <span aria-hidden="true">/</span>
+    <span>{{ contact().firstName | fullName: contact().lastName }}</span>
+  </nav>
+
+  <article class="card detail-card">
+    <header class="detail-head">
+      <span class="avatar" aria-hidden="true">
+        {{ contact().firstName | initials: contact().lastName }}
+      </span>
+      <div class="detail-title">
+        <h1>{{ contact().firstName | fullName: contact().lastName }}</h1>
+        <p>{{ contact().jobTitle | jobLine: contact().company }}</p>
+        @if (category(); as category) {
+          <span class="badge" [style.background-color]="category.color">{{
+            category | catName
+          }}</span>
+        } @else {
+          <span class="badge badge-muted">{{ 'contacts.uncategorized' | t }}</span>
+        }
+      </div>
+      <button
+        type="button"
+        class="star star-lg"
+        [class.active]="contact().favorite"
+        [attr.aria-pressed]="contact().favorite"
+        [attr.aria-label]="
+          (contact().favorite ? 'contacts.removeFavorite' : 'contacts.addFavorite') | t
+        "
+        (click)="toggleFavorite()"
+      >
+        ★
+      </button>
+    </header>
+
+    <dl class="detail-grid">
+      <div class="detail-row">
+        <dt>{{ 'form.email' | t }}</dt>
+        <dd>
+          <a tabindex="0" href="mailto:{{ contact().email }}">{{ contact().email }}</a>
+        </dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'form.phone' | t }}</dt>
+        <dd>
+          <a tabindex="0" href="tel:{{ contact().phone }}">{{ contact().phone }}</a>
+        </dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'form.company' | t }}</dt>
+        <dd>{{ contact().company || '—' }}</dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'form.jobTitle' | t }}</dt>
+        <dd>{{ contact().jobTitle || '—' }}</dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'contacts.createdAt' | t }}</dt>
+        <dd>{{ contact().createdAt | date: 'medium' }}</dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'contacts.updatedAt' | t }}</dt>
+        <dd>{{ contact().updatedAt | date: 'medium' }}</dd>
+      </div>
+    </dl>
+
+    @if (contact().notes) {
+      <div class="detail-notes">
+        <h2>{{ 'contacts.notes' | t }}</h2>
+        <p>{{ contact().notes }}</p>
+      </div>
+    }
+
+    <footer class="detail-actions">
+      <a class="btn btn-ghost" [routerLink]="['/contacts', contact().id, 'edit']">
+        {{ 'contacts.edit' | t }}
+      </a>
+      <button type="button" class="btn btn-ghost" (click)="exportVCard()">
+        {{ 'contacts.exportVcard' | t }}
+      </button>
+      <button type="button" class="btn btn-danger" (click)="requestDelete()">
+        {{ 'contacts.delete' | t }}
+      </button>
+    </footer>
+  </article>
+
+  @if (deleteRequested()) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteContactTitle' | t"
+      [message]="'confirm.deleteContactMessage' | t"
+      (confirmed)="confirmDelete()"
+      (cancelled)="cancelDelete()"
+    />
+  }
+</section>
