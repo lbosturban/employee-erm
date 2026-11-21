@@ -7,9 +7,12 @@ import { buildSeedData } from './seed-data';
  * model changes, and (when keeping data is desired) add an upgrade step
  * instead of relying on the wipe path.
  */
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 const VERSION_KEY = 'schemaVersion';
+
+/** Version that introduced the Phase-2 (ERM) entity tables. */
+export const ERM_SCHEMA_VERSION = 3;
 
 /**
  * Owns the schema lifecycle of localStorage.
@@ -34,6 +37,10 @@ export class MigrationService {
     'contacts',
     'categories',
     'companies',
+    'cases',
+    'escalations',
+    'threatAssessments',
+    'legalElementsBundles',
     'lang',
     'theme',
   ] as const;
@@ -67,9 +74,13 @@ export class MigrationService {
 
   /** Writes the initial sample dataset into storage. */
   private seed(): void {
-    const { categories, companies, contacts } = buildSeedData();
-    this.storage.write('categories', categories);
-    this.storage.write('companies', companies);
-    this.storage.write('contacts', contacts);
+    const seed = buildSeedData();
+    this.storage.write('categories', seed.categories);
+    this.storage.write('companies', seed.companies);
+    this.storage.write('contacts', seed.contacts);
+    this.storage.write('cases', seed.cases);
+    this.storage.write('escalations', seed.escalations);
+    this.storage.write('threatAssessments', seed.threatAssessments);
+    this.storage.write('legalElementsBundles', seed.legalElementsBundles);
   }
 }

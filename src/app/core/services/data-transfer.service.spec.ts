@@ -4,6 +4,10 @@ import { MigrationService, SCHEMA_VERSION } from './migration.service';
 import { ContactService } from './contact.service';
 import { CategoryService } from './category.service';
 import { CompanyService } from './company.service';
+import { CaseService } from './case.service';
+import { EscalationService } from './escalation.service';
+import { ThreatAssessmentService } from './threat-assessment.service';
+import { LegalElementsService } from './legal-elements.service';
 import { DataSnapshot } from '../models/snapshot.model';
 
 describe('DataTransferService', () => {
@@ -20,6 +24,10 @@ describe('DataTransferService', () => {
       categories: TestBed.inject(CategoryService).categories(),
       companies: TestBed.inject(CompanyService).companies(),
       contacts: TestBed.inject(ContactService).contacts(),
+      cases: TestBed.inject(CaseService).cases(),
+      escalations: TestBed.inject(EscalationService).escalations(),
+      threatAssessments: TestBed.inject(ThreatAssessmentService).assessments(),
+      legalElementsBundles: TestBed.inject(LegalElementsService).bundles(),
     };
   });
 

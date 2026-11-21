@@ -16,6 +16,10 @@ import { DataTransferService } from './core/services/data-transfer.service';
 import { VCardService, toContactDraft, ParsedVCard } from './core/services/vcard.service';
 import { CompanyService } from './core/services/company.service';
 import { BrandService } from './core/services/brand.service';
+import { CaseService } from './core/services/case.service';
+import { EscalationService } from './core/services/escalation.service';
+import { ThreatAssessmentService } from './core/services/threat-assessment.service';
+import { LegalElementsService } from './core/services/legal-elements.service';
 import { Contact } from './core/models/contact.model';
 import { DataSnapshot } from './core/models/snapshot.model';
 import { SCHEMA_VERSION } from './core/services/migration.service';
@@ -47,6 +51,10 @@ export class App {
   private readonly contactService = inject(ContactService);
   private readonly categoryService = inject(CategoryService);
   private readonly companyService = inject(CompanyService);
+  private readonly caseService = inject(CaseService);
+  private readonly escalationService = inject(EscalationService);
+  private readonly threatAssessmentService = inject(ThreatAssessmentService);
+  private readonly legalElementsService = inject(LegalElementsService);
   private readonly dataTransfer = inject(DataTransferService);
   private readonly vcardService = inject(VCardService);
   private readonly router = inject(Router);
@@ -118,13 +126,17 @@ export class App {
 
   // ── JSON full-database triggers ──────────────────────────────────────
 
-  /** Exports the complete snapshot (contacts + categories + companies). */
+  /** Exports the complete snapshot (CRM + Phase-2 ERM entities). */
   protected exportJson(): void {
     const snapshot: DataSnapshot = {
       schemaVersion: SCHEMA_VERSION,
       categories: this.categoryService.categories(),
       companies: this.companyService.companies(),
       contacts: this.contactService.contacts(),
+      cases: this.caseService.cases(),
+      escalations: this.escalationService.escalations(),
+      threatAssessments: this.threatAssessmentService.assessments(),
+      legalElementsBundles: this.legalElementsService.bundles(),
     };
     this.dataTransfer.export(snapshot);
     this.showToast(this.i18n.translate('contacts.exported'));
@@ -143,7 +155,11 @@ export class App {
       if (
         !this.categoryService.replaceAll({ categories: snapshot.categories }) ||
         !this.companyService.replaceAll(snapshot.companies) ||
-        !this.contactService.replaceAll(snapshot.contacts)
+        !this.contactService.replaceAll(snapshot.contacts) ||
+        !this.caseService.replaceAll(snapshot.cases ?? []) ||
+        !this.escalationService.replaceAll(snapshot.escalations ?? []) ||
+        !this.threatAssessmentService.replaceAll(snapshot.threatAssessments ?? []) ||
+        !this.legalElementsService.replaceAll(snapshot.legalElementsBundles ?? [])
       ) {
         throw new Error('persist');
       }

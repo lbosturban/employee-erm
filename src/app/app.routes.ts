@@ -82,5 +82,35 @@ export const routes: Routes = [
     title: 'Contacts ERM — Favorites',
     loadComponent: () => import('./features/favorites/favorites').then((m) => m.FavoritesPage),
   },
+
+  // ── Phase 2 — ERM product line (all URLs under /erm flip the brand) ──
+  {
+    path: 'erm/cases',
+    title: 'Contacts ERM — ERM Cases',
+    loadComponent: () =>
+      import('./features/erm/cases-page/cases-page').then((m) => m.CasesPage),
+  },
+  {
+    path: 'erm/escalations',
+    title: 'Contacts ERM — ERM Escalations',
+    loadComponent: () =>
+      import('./features/erm/escalations-page/escalations-page').then((m) => m.EscalationsPage),
+  },
+  {
+    path: 'erm/threat-assessments',
+    title: 'Contacts ERM — Threat Assessments',
+    loadComponent: () =>
+      import('./features/erm/threat-assessments-page/threat-assessments-page').then(
+        (m) => m.ThreatAssessmentsPage,
+      ),
+  },
+  {
+    path: 'erm/legal-elements',
+    title: 'Contacts ERM — Legal Elements',
+    loadComponent: () =>
+      import('./features/erm/legal-elements-page/legal-elements-page').then(
+        (m) => m.LegalElementsPage,
+      ),
+  },
   { path: '**', redirectTo: '' },
 ];

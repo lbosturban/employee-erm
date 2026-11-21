@@ -86,20 +86,22 @@ describe('App', () => {
     expect(app.quickSearch()).toBe('');
   });
 
-  it('separates CRM links from disabled ERM placeholders in the sidebar', async () => {
+  it('separates CRM links from the activated ERM links in the sidebar', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     const links = [...compiled.querySelectorAll('.sidebar a')];
-    // Dashboard, Contacts, Categories, Companies, Favorites + 2 CTAs.
-    expect(links.length).toBe(7);
+    // Dashboard, Contacts, Categories, Companies, Favorites + 2 CTAs + 4 ERM entries.
+    expect(links.length).toBe(11);
     expect(links.some((link) => link.getAttribute('href') === '/companies')).toBe(true);
-
-    const placeholders = [...compiled.querySelectorAll('.sidebar-item-disabled')];
-    expect(placeholders.length).toBe(4);
-    expect(placeholders.every((item) => item.getAttribute('aria-disabled') === 'true')).toBe(
+    expect(links.some((link) => link.getAttribute('href') === '/erm/cases')).toBe(true);
+    expect(links.some((link) => link.getAttribute('href') === '/erm/escalations')).toBe(true);
+    expect(links.some((link) => link.getAttribute('href') === '/erm/threat-assessments')).toBe(
       true,
     );
-    expect(compiled.querySelector('.phase-tag')).not.toBeNull();
+    expect(links.some((link) => link.getAttribute('href') === '/erm/legal-elements')).toBe(true);
+    // Phase 2 is live: no placeholders or "coming soon" tags remain.
+    expect(compiled.querySelectorAll('.sidebar-item-disabled').length).toBe(0);
+    expect(compiled.querySelector('.phase-tag')).toBeNull();
   });
 });

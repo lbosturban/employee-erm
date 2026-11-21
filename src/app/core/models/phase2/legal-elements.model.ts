@@ -40,3 +40,9 @@ export interface LegalElementsBundle {
   references: LegalElementReference[];
   createdAt: string;
 }
+
+/** Everything the caller supplies when creating a new bundle. */
+export type LegalElementsDraft = Omit<LegalElementsBundle, 'id' | 'createdAt'>;
+
+/** Everything the caller supplies when adding a reference to a bundle. */
+export type LegalElementReferenceDraft = Omit<LegalElementReference, 'id'>;

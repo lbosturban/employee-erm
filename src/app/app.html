@@ -149,35 +149,16 @@
         <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
       </span>
 
-      <span class="sidebar-group">
-        {{ 'nav.ermGroup' | t }}
-        <span class="phase-tag">Phase 2</span>
-      </span>
-      <!-- Phase-2 placeholders: rendered, labelled, intentionally inert. -->
-      <span
-        class="sidebar-item-disabled"
-        aria-disabled="true"
-        [title]="'phase2.comingSoon' | t"
-        tabindex="0"
-      >{{ 'erm.cases' | t }}</span>
-      <span
-        class="sidebar-item-disabled"
-        aria-disabled="true"
-        [title]="'phase2.comingSoon' | t"
-        tabindex="0"
-      >{{ 'erm.escalations' | t }}</span>
-      <span
-        class="sidebar-item-disabled"
-        aria-disabled="true"
-        [title]="'phase2.comingSoon' | t"
-        tabindex="0"
-      >{{ 'erm.threatAssessments' | t }}</span>
-      <span
-        class="sidebar-item-disabled"
-        aria-disabled="true"
-        [title]="'phase2.comingSoon' | t"
-        tabindex="0"
-      >{{ 'erm.legalElements' | t }}</span>
+      <span class="sidebar-group">{{ 'nav.ermGroup' | t }}</span>
+      <!-- Phase-2 (ERM) product line — drives the brand switch when active. -->
+      <a routerLink="/erm/cases" routerLinkActive="active">{{ 'erm.cases' | t }}</a>
+      <a routerLink="/erm/escalations" routerLinkActive="active">{{ 'erm.escalations' | t }}</a>
+      <a routerLink="/erm/threat-assessments" routerLinkActive="active">{{
+        'erm.threatAssessments' | t
+      }}</a>
+      <a routerLink="/erm/legal-elements" routerLinkActive="active">{{
+        'erm.legalElements' | t
+      }}</a>
     </nav>
 
     <main id="main" class="app-main" tabindex="-1">

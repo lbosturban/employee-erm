@@ -5,6 +5,18 @@ import { ContactName } from '../models/contact-name.model';
 import { Category } from '../models/category.model';
 import { Company, COMPANY_SIZES, BUSINESS_STRUCTURES, SECTORS } from '../models/company.model';
 import { DataSnapshot } from '../models/snapshot.model';
+import { CrmCase, CASE_KINDS, CASE_STATUSES } from '../models/phase2/case.model';
+import {
+  Escalation,
+  ESCALATION_LEVELS,
+  ESCALATION_PURPOSES,
+} from '../models/phase2/escalation.model';
+import {
+  ThreatAssessment,
+  ThreatSectionEntry,
+  THREAT_LEVELS,
+} from '../models/phase2/threat-assessment.model';
+import { LegalElementsBundle, LEGAL_SECTION_KINDS } from '../models/phase2/legal-elements.model';
 import { SCHEMA_VERSION } from './migration.service';
 
 /**
@@ -63,16 +75,23 @@ export class DataTransferService {
   }
 }
 
-/** Runtime structural check of the snapshot envelope. */
+/** Runtime structural check of the snapshot envelope. The four ERM
+ * arrays are optional: legacy Phase-1 snapshots (schema ≤ 2) import
+ * with them treated as empty. */
 function isSnapshotShape(data: unknown): data is DataSnapshot {
   if (typeof data !== 'object' || data === null) {
     return false;
   }
   const candidate = data as Partial<DataSnapshot>;
+  const optionalArray = (value: unknown): boolean => value === undefined || Array.isArray(value);
   return (
     Array.isArray(candidate.contacts) &&
     Array.isArray(candidate.categories) &&
-    Array.isArray(candidate.companies)
+    Array.isArray(candidate.companies) &&
+    optionalArray(candidate.cases) &&
+    optionalArray(candidate.escalations) &&
+    optionalArray(candidate.threatAssessments) &&
+    optionalArray(candidate.legalElementsBundles)
   );
 }
 
@@ -125,6 +144,80 @@ function validateEntities(snapshot: DataSnapshot): void {
       throw new Error(`Company "${company.id}" references unknown CEO contact "${company.contactId}".`);
     }
   }
+
+  // ── Phase-2 (ERM) entities, kept optional for legacy snapshots ──
+  const cases = snapshot.cases ?? [];
+  const caseIds = new Set<string>();
+  cases.forEach((entry, index) => {
+    if (!isCase(entry)) {
+      throw new Error(`Invalid case at index ${index}.`);
+    }
+    if (caseIds.has(entry.id)) {
+      throw new Error(`Duplicate case id "${entry.id}".`);
+    }
+    caseIds.add(entry.id);
+    for (const contactId of entry.contactIds) {
+      if (!contactIds.has(contactId)) {
+        throw new Error(`Case "${entry.id}" references unknown contact "${contactId}".`);
+      }
+    }
+    if (entry.companyId !== null && !companyIds.has(entry.companyId)) {
+      throw new Error(`Case "${entry.id}" references unknown company "${entry.companyId}".`);
+    }
+  });
+
+  (snapshot.escalations ?? []).forEach((entry, index) => {
+    if (!isEscalation(entry)) {
+      throw new Error(`Invalid escalation at index ${index}.`);
+    }
+    if (!contactIds.has(entry.sourceContactId)) {
+      throw new Error(
+        `Escalation "${entry.id}" references unknown source contact "${entry.sourceContactId}".`,
+      );
+    }
+    if (!contactIds.has(entry.targetContactId)) {
+      throw new Error(
+        `Escalation "${entry.id}" references unknown target contact "${entry.targetContactId}".`,
+      );
+    }
+    if (entry.mediationCaseId !== null && !caseIds.has(entry.mediationCaseId)) {
+      throw new Error(
+        `Escalation "${entry.id}" references unknown mediation case "${entry.mediationCaseId}".`,
+      );
+    }
+  });
+
+  (snapshot.threatAssessments ?? []).forEach((entry, index) => {
+    if (!isThreatAssessment(entry)) {
+      throw new Error(`Invalid threat assessment at index ${index}.`);
+    }
+    if (!contactIds.has(entry.contactId)) {
+      throw new Error(
+        `Threat assessment "${entry.id}" references unknown contact "${entry.contactId}".`,
+      );
+    }
+    if (entry.companyId !== null && !companyIds.has(entry.companyId)) {
+      throw new Error(
+        `Threat assessment "${entry.id}" references unknown company "${entry.companyId}".`,
+      );
+    }
+  });
+
+  (snapshot.legalElementsBundles ?? []).forEach((entry, index) => {
+    if (!isLegalElementsBundle(entry)) {
+      throw new Error(`Invalid legal elements bundle at index ${index}.`);
+    }
+    if (!contactIds.has(entry.contactId)) {
+      throw new Error(
+        `Legal elements bundle "${entry.id}" references unknown contact "${entry.contactId}".`,
+      );
+    }
+    if (entry.companyId !== null && !companyIds.has(entry.companyId)) {
+      throw new Error(
+        `Legal elements bundle "${entry.id}" references unknown company "${entry.companyId}".`,
+      );
+    }
+  });
 }
 
 export function isContact(value: unknown): value is Contact {
@@ -216,4 +309,111 @@ function isContactName(name: unknown): name is ContactName {
     (typeof candidate.lastName === 'string' || candidate.lastName === undefined) &&
     (candidate.middleNames === undefined || Array.isArray(candidate.middleNames));
   return modeOk && orderOk && rawOk && tokensOk;
+}
+
+/** Phase 2 — ERM entity guards. Enumerations are validated against the
+ * same typed constants the UI uses, so an unknown kind or level can
+ * never enter localStorage through the JSON import. */
+export function isCase(value: unknown): value is CrmCase {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const entity = value as Partial<CrmCase>;
+  return (
+    typeof entity.id === 'string' &&
+    entity.id.trim() !== '' &&
+    entity.kind !== undefined &&
+    (CASE_KINDS as readonly string[]).includes(entity.kind) &&
+    typeof entity.title === 'string' &&
+    entity.title.trim() !== '' &&
+    typeof entity.description === 'string' &&
+    Array.isArray(entity.contactIds) &&
+    entity.contactIds.every((id) => typeof id === 'string') &&
+    (entity.companyId === null || typeof entity.companyId === 'string') &&
+    entity.status !== undefined &&
+    (CASE_STATUSES as readonly string[]).includes(entity.status) &&
+    typeof entity.createdAt === 'string' &&
+    typeof entity.updatedAt === 'string'
+  );
+}
+
+export function isEscalation(value: unknown): value is Escalation {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const entity = value as Partial<Escalation>;
+  return (
+    typeof entity.id === 'string' &&
+    entity.id.trim() !== '' &&
+    typeof entity.sourceContactId === 'string' &&
+    typeof entity.targetContactId === 'string' &&
+    entity.sourceLevel !== undefined &&
+    (ESCALATION_LEVELS as readonly string[]).includes(entity.sourceLevel) &&
+    entity.targetLevel !== undefined &&
+    (ESCALATION_LEVELS as readonly string[]).includes(entity.targetLevel) &&
+    entity.purpose !== undefined &&
+    (ESCALATION_PURPOSES as readonly string[]).includes(entity.purpose) &&
+    (entity.mediationCaseId === null || typeof entity.mediationCaseId === 'string') &&
+    typeof entity.notes === 'string' &&
+    typeof entity.createdAt === 'string'
+  );
+}
+
+export function isThreatAssessment(value: unknown): value is ThreatAssessment {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const entity = value as Partial<ThreatAssessment>;
+  return (
+    typeof entity.id === 'string' &&
+    entity.id.trim() !== '' &&
+    typeof entity.contactId === 'string' &&
+    (entity.companyId === null || typeof entity.companyId === 'string') &&
+    Array.isArray(entity.sections) &&
+    entity.sections.every(isThreatSectionEntry) &&
+    ((THREAT_LEVELS) as readonly string[]).includes(String(entity.overallThreat)) &&
+    typeof entity.createdAt === 'string'
+  );
+}
+
+function isThreatSectionEntry(value: unknown): value is ThreatSectionEntry {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const entry = value as Partial<ThreatSectionEntry>;
+  return (
+    typeof entry.section === 'string' &&
+    typeof entry.findings === 'string' &&
+    entry.severity !== undefined &&
+    ['unknown', 'low', 'moderate', 'high', 'critical'].includes(entry.severity)
+  );
+}
+
+export function isLegalElementsBundle(value: unknown): value is LegalElementsBundle {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+  const entity = value as Partial<LegalElementsBundle>;
+  return (
+    typeof entity.id === 'string' &&
+    entity.id.trim() !== '' &&
+    typeof entity.contactId === 'string' &&
+    (entity.companyId === null || typeof entity.companyId === 'string') &&
+    Array.isArray(entity.references) &&
+    entity.references.every((reference) => {
+      if (typeof reference !== 'object' || reference === null) {
+        return false;
+      }
+      const candidate = reference as Partial<LegalElementsBundle['references'][number]>;
+      return (
+        typeof candidate.id === 'string' &&
+        typeof candidate.label === 'string' &&
+        typeof candidate.location === 'string' &&
+        candidate.kind !== undefined &&
+        (LEGAL_SECTION_KINDS as readonly string[]).includes(candidate.kind) &&
+        (candidate.externalUrl === null || typeof candidate.externalUrl === 'string')
+      );
+    }) &&
+    typeof entity.createdAt === 'string'
+  );
 }

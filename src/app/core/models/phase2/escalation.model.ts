@@ -26,6 +26,15 @@ export type EscalationPurpose =
   | 'sanction'
   | 'legal-action';
 
+/** All escalation purposes, in display order. */
+export const ESCALATION_PURPOSES: readonly EscalationPurpose[] = [
+  'information',
+  'protection',
+  'resolution',
+  'sanction',
+  'legal-action',
+];
+
 /**
  * One escalation step: a source contact initiating it toward a targeted
  * contact, with an optional reminder of the mediation case that
@@ -45,5 +54,10 @@ export interface Escalation {
   purpose: EscalationPurpose;
   /** Optional reference to the related mediation case (`CrmCase.id`). */
   mediationCaseId: string | null;
+  /** Free-form context recorded by the initiator of the step. */
+  notes: string;
   createdAt: string;
 }
+
+/** Everything the caller supplies when recording a new escalation step. */
+export type EscalationDraft = Omit<Escalation, 'id' | 'createdAt'>;

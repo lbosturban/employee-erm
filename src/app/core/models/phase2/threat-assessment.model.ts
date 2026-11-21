@@ -24,7 +24,21 @@ export type ThreatSection =
   | 'mitigation' // management / intervention plan
   | 'final-classification';
 
-/** Answer object for one DCJS-inspired section (structure defined in Phase 2). */
+/** DCJS-inspired sections, in assessment order. */
+export const THREAT_SECTIONS: readonly ThreatSection[] = [
+  'identity',
+  'motives',
+  'grievance',
+  'targeting',
+  'capability',
+  'breach-attempts',
+  'direct-leakage',
+  'risk-attitude',
+  'mitigation',
+  'final-classification',
+];
+
+/** Answer object for one DCJS-inspired section. */
 export interface ThreatSectionEntry {
   section: ThreatSection;
   /** Free-form findings recorded by the assessor. */
@@ -32,6 +46,27 @@ export interface ThreatSectionEntry {
   /** Qualitative severity contributed by this section. */
   severity: 'unknown' | 'low' | 'moderate' | 'high' | 'critical';
 }
+
+/** Section severities, from the least to the most alarming. */
+export const THREAT_SEVERITIES: readonly ThreatSectionEntry['severity'][] = [
+  'unknown',
+  'low',
+  'moderate',
+  'high',
+  'critical',
+];
+
+/** Roll-up threat level to reputation, PR, legal and financial risk. */
+export type ThreatLevel = 'no-risk' | 'minor' | 'moderate' | 'major' | 'imminent';
+
+/** All threat levels, from the least to the most alarming. */
+export const THREAT_LEVELS: readonly ThreatLevel[] = [
+  'no-risk',
+  'minor',
+  'moderate',
+  'major',
+  'imminent',
+];
 
 /** Company-threat evaluation attached to a contact via `contactId`. */
 export interface ThreatAssessment {
@@ -41,6 +76,9 @@ export interface ThreatAssessment {
   /** Per-section findings. */
   sections: ThreatSectionEntry[];
   /** Roll-up threat level to reputation, PR, legal and financial risk. */
-  overallThreat: 'no-risk' | 'minor' | 'moderate' | 'major' | 'imminent';
+  overallThreat: ThreatLevel;
   createdAt: string;
 }
+
+/** Everything the caller supplies when creating a new assessment. */
+export type ThreatAssessmentDraft = Omit<ThreatAssessment, 'id' | 'createdAt'>;

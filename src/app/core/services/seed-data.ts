@@ -2,6 +2,10 @@ import { Category } from '../models/category.model';
 import { Contact } from '../models/contact.model';
 import { ContactName } from '../models/contact-name.model';
 import { Company } from '../models/company.model';
+import { CrmCase } from '../models/phase2/case.model';
+import { Escalation } from '../models/phase2/escalation.model';
+import { LegalElementsBundle } from '../models/phase2/legal-elements.model';
+import { ThreatAssessment, ThreatSectionEntry } from '../models/phase2/threat-assessment.model';
 import { generateId, nowIso } from '../utils/id';
 
 /** Everything the app seeds on first launch (or after a schema reset). */
@@ -9,6 +13,10 @@ export interface SeedData {
   categories: Category[];
   companies: Company[];
   contacts: Contact[];
+  cases: CrmCase[];
+  escalations: Escalation[];
+  threatAssessments: ThreatAssessment[];
+  legalElementsBundles: LegalElementsBundle[];
 }
 
 /**
@@ -370,10 +378,189 @@ export function buildSeedData(): SeedData {
 
   const companies: Company[] = [novapart, kaze, techwave, meridian, santoria, briquetal, atelier];
 
+  // ── Phase 2 (ERM): cases, escalations, threat assessments, legal elements ──
+  const daysAgo = (days: number): string => new Date(Date.now() - days * 86_400_000).toISOString();
+  const caseRow = (
+    c: Omit<CrmCase, 'createdAt' | 'updatedAt'>,
+    createdBeforeDays: number,
+  ): CrmCase => {
+    const createdAt = daysAgo(createdBeforeDays);
+    return { ...c, createdAt, updatedAt: createdAt };
+  };
+
+  const caseOvertimeIrritant = caseRow(
+    {
+      id: generateId(),
+      kind: 'irritant',
+      title: 'Recurring meetings scheduled outside working hours',
+      description:
+        'Weekly syncs have been moved to 7:30 pm three weeks in a row, cutting into personal ' +
+        'time. Lea flagged it; Victor considers it "the only workable slot".',
+      contactIds: [lea.id, victor.id],
+      companyId: novapart.id,
+      status: 'open',
+    },
+    6,
+  );
+
+  const caseAuthorshipConflict = caseRow(
+    {
+      id: generateId(),
+      kind: 'conflict',
+      title: 'Dispute over authorship credit in the joint publication',
+      description:
+        'Julien claims Hiroshi omitted his contribution from the paper credits; Hiroshi ' +
+        'contests the extent of the reviewed material. Authorship rules are unclear.',
+      contactIds: [julien.id, hiroshi.id],
+      companyId: techwave.id,
+      status: 'observed',
+    },
+    14,
+  );
+
+  const caseOvertimeComplaint = caseRow(
+    {
+      id: generateId(),
+      kind: 'complaint',
+      title: 'Formal complaint about uncompensated overtime',
+      description:
+        'Rajesh filed a written complaint covering 32 hours of unpaid overtime during the ' +
+        'Q2 migration freeze, with timesheet extracts attached.',
+      contactIds: [rajesh.id],
+      companyId: meridian.id,
+      status: 'open',
+    },
+    9,
+  );
+
+  const caseRestructuringMediation = caseRow(
+    {
+      id: generateId(),
+      kind: 'mediation',
+      title: 'Mediation after the team restructuring of the Paris hub',
+      description:
+        'Facilitated mediation between Claire and Lea about role clarity and reporting lines ' +
+        'after the restructuring. It concluded with a written agreement on meeting cadence.',
+      contactIds: [claire.id, lea.id],
+      companyId: santoria.id,
+      status: 'resolved',
+    },
+    21,
+  );
+
+  const escalations: Escalation[] = [
+    {
+      id: generateId(),
+      sourceContactId: julien.id,
+      targetContactId: hiroshi.id,
+      sourceLevel: 'superior',
+      targetLevel: 'management',
+      purpose: 'resolution',
+      mediationCaseId: caseAuthorshipConflict.id,
+      notes: 'Authorship dispute raised one level up after two failed bilateral talks.',
+      createdAt: daysAgo(12),
+    },
+    {
+      id: generateId(),
+      sourceContactId: rajesh.id,
+      targetContactId: margarethe.id,
+      sourceLevel: 'management',
+      targetLevel: 'hr',
+      purpose: 'protection',
+      mediationCaseId: caseOvertimeComplaint.id,
+      notes: 'HR involvement requested to guarantee the overtime claim is handled formally.',
+      createdAt: daysAgo(7),
+    },
+  ];
+
+  // DCJS-inspired sections, exercised end-to-end on one assessment.
+  const threatSection = (section: ThreatSectionEntry['section'], findings: string, severity: ThreatSectionEntry['severity']): ThreatSectionEntry => ({
+    section,
+    findings,
+    severity,
+  });
+  const threatAssessments: ThreatAssessment[] = [
+    {
+      id: generateId(),
+      contactId: victor.id,
+      companyId: briquetal.id,
+      sections: [
+        threatSection(
+          'identity',
+          'Victor, site manager,  well known internally; no prior incidents.',
+          'unknown',
+        ),
+        threatSection('motives', 'Resists workload rebalancing; economic pressure cited.', 'low'),
+        threatSection('grievance', 'Feels unrecognized after the reorganization.', 'moderate'),
+        threatSection('targeting', 'Named no specific target; frustration is general.', 'low'),
+        threatSection('capability', 'Standard site access; no relevant skills declared.', 'unknown'),
+        threatSection('breach-attempts', 'Repeatedly bypassed the scheduling process.', 'low'),
+        threatSection('direct-leakage', 'None observed.', 'unknown'),
+        threatSection('risk-attitude', 'Prefers negotiation; escalates verbally first.', 'low'),
+        threatSection(
+          'mitigation',
+          'Monthly check-ins agreed with HR; workload review scheduled.',
+          'low',
+        ),
+        threatSection('final-classification', ' Irritant pattern only,  no threat indicators.', 'low'),
+      ],
+      overallThreat: 'minor',
+      createdAt: daysAgo(5),
+    },
+  ];
+
+  const legalElementsBundles: LegalElementsBundle[] = [
+    {
+      id: generateId(),
+      contactId: claire.id,
+      companyId: novapart.id,
+      references: [
+        {
+          id: generateId(),
+          kind: 'contracts',
+          label: 'CEO employment contract — 2023 revision, clause 8.2 (notice period)',
+          location: 'Contracts archive / NovaPart / Executives / 2023',
+          externalUrl: null,
+        },
+        {
+          id: generateId(),
+          kind: 'legal-work-code',
+          label: 'Labour Code, article L1221-1 — employment contract definition',
+          location: 'Légifrance',
+          externalUrl: 'https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006900783',
+        },
+        {
+          id: generateId(),
+          kind: 'internal-structural-elements',
+          label: 'NovaPart internal policy — remote-work charter v3',
+          location: 'Intranet / Policies / People',
+          externalUrl: null,
+        },
+        {
+          id: generateId(),
+          kind: 'further-legal-documentation',
+          label: 'Restructuring information-consultation minutes (CSE, March)',
+          location: 'Legal documentation / NovaPart / CSE 2026',
+          externalUrl: null,
+        },
+      ],
+      createdAt: daysAgo(11),
+    },
+  ];
+
   return {
     categories: [students, partners, clients, speakers],
     companies,
     contacts,
+    cases: [
+      caseOvertimeIrritant,
+      caseAuthorshipConflict,
+      caseOvertimeComplaint,
+      caseRestructuringMediation,
+    ],
+    escalations,
+    threatAssessments,
+    legalElementsBundles,
   };
 }
 
