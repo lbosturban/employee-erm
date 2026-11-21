@@ -353,13 +353,14 @@
     flex-direction: column;
   }
 
-  /* Sidebar becomes a wrapping strip under the header: only the three
-     section titles show (CRM / ERM / AI Agent) so no horizontal scroll
-     is needed; unfolding a title reveals its links as full-width rows. */
+  /* Sidebar becomes a wrapping strip under the header laid out as a
+     grid: the three section titles form a full-width menu bar on row 1
+     (equal cells, no horizontal scroll), and the unfolded group spans
+     the whole row 2 as a submenu bar of its own actions. */
   .sidebar {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: stretch;
     gap: var(--space-2);
     width: 100%;
     border-right: none;
@@ -374,10 +375,13 @@
   /* The section title becomes the fold toggle for its group. The
      ".nav-section:not(:first-child)" prefix is repeated so this reset
      outranks the desktop group-separator rule (equal specificity, but
-     later in source order). */
+     later in source order). "order: -1" pulls the three toggles ahead
+     of the (interleaved) content divs in the grid's placement order,
+     so they always share the first menu-bar row. */
   .nav-section:not(:first-child) .sidebar-group,
   .sidebar-group {
-    width: auto;
+    order: -1;
+    width: 100%;
     padding: 6px 12px;
     border: 1px solid var(--border);
     border-top: 1px solid var(--border);
@@ -386,6 +390,7 @@
     color: var(--text);
     font-size: 0.75rem;
     margin: 0;
+    justify-content: center;
   }
 
   .sidebar-group:hover {
@@ -397,10 +402,12 @@
     display: inline;
   }
 
-  /* Folded by default; the open group spans the full strip width. */
+  /* Folded by default; the open group becomes a full-width submenu bar
+     on the next grid row (sections are display:contents, so the grid
+     items are the toggles and these content divs directly). */
   .nav-section-content {
     display: none;
-    flex-basis: 100%;
+    grid-column: 1 / -1;
   }
 
   .nav-section-content.open {
@@ -408,9 +415,11 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--space-2);
-    padding-top: var(--space-2);
-    border-top: 1px dashed var(--border);
+    gap: var(--space-2) var(--space-3);
+    padding: var(--space-2) var(--space-2);
+    background: var(--accent-soft, var(--surface-alt));
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
   }
 
   .sidebar-cta-group {
