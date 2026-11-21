@@ -72,6 +72,12 @@ export const routes: Routes = [
     canDeactivate: [canDeactivateGuard],
   },
   {
+    path: 'companies',
+    title: 'Contacts ERM — Companies',
+    loadComponent: () =>
+      import('./features/companies/companies-page/companies-page').then((m) => m.CompaniesPage),
+  },
+  {
     path: 'favorites',
     title: 'Contacts ERM — Favorites',
     loadComponent: () => import('./features/favorites/favorites').then((m) => m.FavoritesPage),

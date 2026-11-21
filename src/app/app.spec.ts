@@ -1,13 +1,18 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
+import { Router, provideRouter } from '@angular/router';
 import { App } from './app';
+import { routes } from './app.routes';
+import { MigrationService } from './core/services/migration.service';
 
 describe('App', () => {
   beforeEach(async () => {
+    window.localStorage.clear();
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter([])],
+      providers: [provideRouter(routes)],
     }).compileComponents();
+    TestBed.inject(MigrationService).run();
   });
 
   it('should create the app', () => {
@@ -23,17 +28,25 @@ describe('App', () => {
     expect(compiled.querySelector('.brand-text')?.textContent).toContain('Contacts ERM');
   });
 
-  it('should render the vCard import button and drive the hidden file input', async () => {
+  it('renders the five header tool buttons', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    const buttons = [...compiled.querySelectorAll('.header-tools .icon-btn')];
-    // Import (labeled), language and theme buttons.
-    expect(buttons.length).toBe(3);
-    const importButton = buttons[0] as HTMLButtonElement;
-    expect(importButton.textContent).toContain('Import');
-    expect(importButton.textContent).toContain('📥');
+    const buttons = [...compiled.querySelectorAll('.header-tools > .icon-btn')];
+    // vCard import, JSON export, JSON import, language, theme.
+    expect(buttons.length).toBe(5);
+    const labels = buttons.map((button) => button.textContent ?? '');
+    expect(labels[0]).toContain('📥');
+    expect(labels[1]).toContain('Export JSON');
+    expect(labels[2]).toContain('Import JSON');
+    expect(labels[3]).toMatch(/FR|EN/);
+  });
 
+  it('drives the hidden vCard file input from the labeled import button', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const importButton = compiled.querySelector<HTMLButtonElement>('.header-tools > .icon-btn')!;
     let opened = false;
     const hiddenInput = compiled.querySelector<HTMLInputElement>('.visually-hidden-input')!;
     hiddenInput.click = () => {
@@ -42,5 +55,51 @@ describe('App', () => {
     };
     importButton.click();
     expect(opened).toBe(true);
+  });
+
+  it('shows quick-search matches and navigates to the picked contact', async () => {
+    const fixture = TestBed.createComponent(App);
+    const app = fixture.componentInstance;
+    await fixture.whenStable();
+
+    // Bypass the debounce directive by driving the handler directly.
+    app.onSearchTerm('tanaka');
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(app.quickResults().length).toBeGreaterThanOrEqual(1);
+    expect(compiled.querySelector('#quick-search-results')).not.toBeNull();
+
+    const firstResult = compiled.querySelector<HTMLButtonElement>(
+      '#quick-search-results button',
+    )!;
+    expect(firstResult.textContent).toContain('Tanaka');
+
+    // Zoneless navigation is async; assert the router intent directly.
+    const router = TestBed.inject(Router);
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    firstResult.click();
+    expect(navigateSpy).toHaveBeenCalledTimes(1);
+    const [commands] = navigateSpy.mock.calls[0] as unknown as [string[]];
+    expect(commands[0]).toBe('/contacts');
+    expect(commands[1]).toMatch(/.+/);
+    expect(app.searchOpen()).toBe(false);
+    expect(app.quickSearch()).toBe('');
+  });
+
+  it('separates CRM links from disabled ERM placeholders in the sidebar', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const links = [...compiled.querySelectorAll('.sidebar a')];
+    // Dashboard, Contacts, Categories, Companies, Favorites + 2 CTAs.
+    expect(links.length).toBe(7);
+    expect(links.some((link) => link.getAttribute('href') === '/companies')).toBe(true);
+
+    const placeholders = [...compiled.querySelectorAll('.sidebar-item-disabled')];
+    expect(placeholders.length).toBe(4);
+    expect(placeholders.every((item) => item.getAttribute('aria-disabled') === 'true')).toBe(
+      true,
+    );
+    expect(compiled.querySelector('.phase-tag')).not.toBeNull();
   });
 });

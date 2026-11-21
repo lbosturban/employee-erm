@@ -1,0 +1,173 @@
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'companies.title' | t }}</h1>
+      <p class="page-subtitle">{{ 'companies.subtitle' | t }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+      + {{ 'companies.new' | t }}
+    </button>
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" class="notice-close" (click)="dismissError()" aria-label="Close">
+        ×
+      </button>
+    </p>
+  }
+
+  @if (companyService.companies().length === 0) {
+    <p class="empty-state">{{ 'companies.empty' | t }}</p>
+  } @else {
+    <div class="company-grid">
+      @for (company of companyService.companies(); track company.id) {
+        <article class="card company-card">
+          <div class="company-head">
+            <h2>{{ company.name }}</h2>
+            <span class="company-usage">
+              {{ companyService.usageByCompany().get(company.id) ?? 0 }}
+              {{ 'companies.contactsCount' | t }}
+            </span>
+          </div>
+
+          <div class="company-size">
+            <span class="company-size-label">{{ vocabularyKey('size', company.size) | t }}</span>
+            <span class="company-size-hint" [title]="vocabularyKey('sizeHint', company.size) | t">
+              {{ vocabularyKey('sizeHint', company.size) | t }}
+            </span>
+          </div>
+
+          <p class="company-structure-sector">
+            {{ vocabularyKey('structure', company.businessStructure) | t }}
+            —
+            {{ vocabularyKey('sector', company.sector) | t }}
+          </p>
+
+          @if (ceoByCompany().get(company.id); as ceo) {
+            <p class="company-ceo">{{ 'companies.ceo' | t }}: {{ ceo.name | fullName }}</p>
+          } @else {
+            <p class="company-ceo company-ceo-none">{{ 'companies.ceoNone' | t }}</p>
+          }
+
+          <div class="company-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [attr.aria-label]="'companies.edit' | t"
+              (click)="openEditModal(company)"
+            >
+              {{ 'companies.edit' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              [attr.aria-label]="'companies.delete' | t"
+              (click)="pendingDeletion.set(company)"
+            >
+              {{ 'companies.delete' | t }}
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (pendingDeletion(); as company) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteCompanyTitle' | t"
+      [message]="'confirm.deleteCompanyMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+
+  @if (formOpen()) {
+    <div
+      class="dialog-overlay"
+      role="presentation"
+      (click)="closeModal()"
+      (keydown.escape)="closeModal()"
+    >
+      <div
+        class="dialog company-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="company-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="company-dialog-title">
+          {{ (isEdit() ? 'companies.edit' : 'companies.new') | t }}
+        </h2>
+
+        @if (modalError(); as message) {
+          <p class="notice notice-error" role="alert">{{ message }}</p>
+        }
+
+        <form class="company-form" [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+          <label class="form-field">
+            <span>{{ 'form.companyName' | t }} <em aria-hidden="true">*</em></span>
+            <input
+              type="text"
+              class="field"
+              formControlName="name"
+              appAutofocus
+              [attr.aria-invalid]="hasError('name')"
+              [attr.aria-describedby]="hasError('name') ? 'company-name-error' : null"
+            />
+            @if (errorFor('name'); as message) {
+              <span class="form-error" id="company-name-error" role="alert">{{ message }}</span>
+            }
+          </label>
+
+          <div class="form-field">
+            <label for="company-size">{{ 'form.size' | t }} <em aria-hidden="true">*</em></label>
+            <select id="company-size" class="field" formControlName="size">
+              @for (option of sizeOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="company-structure">
+              {{ 'form.businessStructure' | t }} <em aria-hidden="true">*</em>
+            </label>
+            <select id="company-structure" class="field" formControlName="businessStructure">
+              @for (option of structureOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="company-sector">{{ 'form.sector' | t }} <em aria-hidden="true">*</em></label>
+            <select id="company-sector" class="field" formControlName="sector">
+              @for (option of sectorOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="company-ceo">{{ 'form.ceo' | t }}</label>
+            <select id="company-ceo" class="field" formControlName="contactId">
+              <option value="">{{ 'form.selectPlaceholder' | t }}</option>
+              @for (contact of contacts(); track contact.id) {
+                <option [value]="contact.id">{{ contact.name | fullName }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" (click)="closeModal()">
+              {{ 'form.cancel' | t }}
+            </button>
+            <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

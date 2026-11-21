@@ -6,6 +6,32 @@
   </nav>
 
   <article class="card detail-card">
+    <!-- Tab bar: general profile today; the ERM history tab is a
+         Phase-2 placeholder, intentionally disabled. -->
+    <div class="detail-tabs" role="tablist" aria-label="Contact sections">
+      <button
+        type="button"
+        class="detail-tab active"
+        role="tab"
+        aria-selected="true"
+        [attr.aria-controls]="'contact-general'"
+      >
+        {{ 'detail.tabGeneral' | t }}
+      </button>
+      <button
+        type="button"
+        class="detail-tab detail-tab-disabled"
+        role="tab"
+        aria-selected="false"
+        aria-disabled="true"
+        [title]="'phase2.comingSoon' | t"
+      >
+        {{ 'detail.tabErm' | t }}
+        <span class="phase-tag">Phase 2</span>
+      </button>
+    </div>
+
+    <div id="contact-general" role="tabpanel">
     <header class="detail-head">
       @if (contact().profileImageUrl) {
         <img
@@ -140,6 +166,7 @@
         {{ 'contacts.delete' | t }}
       </button>
     </footer>
+    </div>
   </article>
 
   @if (deleteRequested()) {

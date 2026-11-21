@@ -12,6 +12,7 @@ import { CategoryFormPage } from './features/categories/category-form/category-f
 import { CategoryDetailPage } from './features/categories/category-detail/category-detail';
 import { DashboardPage } from './features/dashboard/dashboard';
 import { FavoritesPage } from './features/favorites/favorites';
+import { CompaniesPage } from './features/companies/companies-page/companies-page';
 
 /**
  * Router integration tests: every entry point of the navigation
@@ -57,6 +58,10 @@ describe('app routes', () => {
   it('"/categories/:id" renders the detail of a seeded category', async () => {
     const category = TestBed.inject(CategoryService).categories()[0];
     expect((await pageAt(`/categories/${category.id}`)) instanceof CategoryDetailPage).toBe(true);
+  });
+
+  it('"/companies" renders the companies list', async () => {
+    expect((await pageAt('/companies')) instanceof CompaniesPage).toBe(true);
   });
 
   it('"/favorites" renders the favorites page', async () => {

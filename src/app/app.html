@@ -10,16 +10,43 @@
       </span>
     </a>
 
-    <nav class="main-nav" aria-label="Main navigation">
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        {{ 'nav.dashboard' | t }}
-      </a>
-      <a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | t }}</a>
-      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | t }}</a>
-      <a routerLink="/favorites" routerLinkActive="active">{{ 'nav.favorites' | t }}</a>
-      <a routerLink="/contacts/new" class="nav-cta">+ {{ 'nav.newContact' | t }}</a>
-      <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
-    </nav>
+    <div #searchBox class="quick-search">
+      <input
+        type="search"
+        class="quick-search-input"
+        appDebounceInput
+        [debounceTime]="180"
+        [value]="quickSearch()"
+        (debouncedInput)="onSearchTerm($event)"
+        (keydown)="onSearchKeydown($event)"
+        (focus)="searchOpen.set(quickSearch().trim() !== '')"
+        [attr.aria-label]="'search.placeholder' | t"
+        [placeholder]="'search.placeholder' | t"
+        role="combobox"
+        [attr.aria-expanded]="searchOpen()"
+        aria-controls="quick-search-results"
+        aria-autocomplete="list"
+      />
+      @if (searchOpen()) {
+        <ul id="quick-search-results" class="quick-results" role="listbox">
+          @for (result of quickResults(); track result.id) {
+            <li role="option" aria-selected="false">
+              <button type="button" (click)="goToContact(result)">
+                <span class="quick-avatar" aria-hidden="true">{{ result.name | initials }}</span>
+                <span class="quick-meta">
+                  <strong>{{ result.name | fullName }}</strong>
+                  <small>{{ result.email }}</small>
+                </span>
+              </button>
+            </li>
+          } @empty {
+            <li class="quick-empty" role="option" aria-selected="false" aria-disabled="true">
+              {{ 'search.noResults' | t }}
+            </li>
+          }
+        </ul>
+      }
+    </div>
 
     <div class="header-tools">
       <button
@@ -41,6 +68,37 @@
         tabindex="-1"
         aria-hidden="true"
       />
+
+      <button
+        type="button"
+        class="icon-btn import-btn"
+        (click)="exportJson()"
+        [attr.aria-label]="'data.export' | t"
+        [title]="'data.export' | t"
+      >
+        <span aria-hidden="true">🧾</span>
+        {{ 'data.exportLabel' | t }}
+      </button>
+      <button
+        type="button"
+        class="icon-btn import-btn"
+        (click)="jsonInput.click()"
+        [attr.aria-label]="'data.import' | t"
+        [title]="'data.import' | t"
+      >
+        <span aria-hidden="true">📂</span>
+        {{ 'data.importLabel' | t }}
+      </button>
+      <input
+        #jsonInput
+        type="file"
+        class="visually-hidden-input"
+        accept="application/json,.json"
+        (change)="importJson($event)"
+        tabindex="-1"
+        aria-hidden="true"
+      />
+
       <button
         type="button"
         class="icon-btn lang-btn"
@@ -74,9 +132,56 @@
     <p class="app-toast" role="status">{{ message }}</p>
   }
 
-  <main id="main" class="app-main" tabindex="-1">
-    <router-outlet />
-  </main>
+  <div class="app-body">
+    <nav class="sidebar" aria-label="Main navigation">
+      <span class="sidebar-group">{{ 'nav.crmGroup' | t }}</span>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        {{ 'nav.dashboard' | t }}
+      </a>
+      <a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | t }}</a>
+      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | t }}</a>
+      <a routerLink="/companies" routerLinkActive="active">{{ 'nav.companies' | t }}</a>
+      <a routerLink="/favorites" routerLinkActive="active">{{ 'nav.favorites' | t }}</a>
+      <span class="sidebar-cta-group">
+        <a routerLink="/contacts/new" class="nav-cta">+ {{ 'nav.newContact' | t }}</a>
+        <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
+      </span>
+
+      <span class="sidebar-group">
+        {{ 'nav.ermGroup' | t }}
+        <span class="phase-tag">Phase 2</span>
+      </span>
+      <!-- Phase-2 placeholders: rendered, labelled, intentionally inert. -->
+      <span
+        class="sidebar-item-disabled"
+        aria-disabled="true"
+        [title]="'phase2.comingSoon' | t"
+        tabindex="0"
+      >{{ 'erm.cases' | t }}</span>
+      <span
+        class="sidebar-item-disabled"
+        aria-disabled="true"
+        [title]="'phase2.comingSoon' | t"
+        tabindex="0"
+      >{{ 'erm.escalations' | t }}</span>
+      <span
+        class="sidebar-item-disabled"
+        aria-disabled="true"
+        [title]="'phase2.comingSoon' | t"
+        tabindex="0"
+      >{{ 'erm.threatAssessments' | t }}</span>
+      <span
+        class="sidebar-item-disabled"
+        aria-disabled="true"
+        [title]="'phase2.comingSoon' | t"
+        tabindex="0"
+      >{{ 'erm.legalElements' | t }}</span>
+    </nav>
+
+    <main id="main" class="app-main" tabindex="-1">
+      <router-outlet />
+    </main>
+  </div>
 
   <footer class="app-footer">
     <p>{{ 'footer.madeWith' | t }}</p>

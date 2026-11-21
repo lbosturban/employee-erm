@@ -80,24 +80,7 @@
         }
       </select>
     </label>
-
-    <div class="toolbar-data">
-      <button type="button" class="btn btn-ghost" (click)="exportJson()">
-        {{ 'contacts.export' | t }}
-      </button>
-      <label class="btn btn-ghost file-label">
-        {{ 'contacts.import' | t }}
-        <input type="file" accept="application/json" (change)="importJson($event)" hidden />
-      </label>
-    </div>
   </div>
-
-  @if (importMessage(); as message) {
-    <p class="notice notice-success" role="status">{{ message }}</p>
-  }
-  @if (errorMessage(); as message) {
-    <p class="notice notice-error" role="alert">{{ message }}</p>
-  }
 
   @if (pageSlice().length === 0) {
     <p class="empty-state">{{ 'contacts.empty' | t }}</p>

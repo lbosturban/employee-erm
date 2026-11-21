@@ -21,6 +21,7 @@
   --success-text: #14532d;
 
   --radius: 10px;
+  --shadow: 0 8px 24px rgba(28, 35, 51, 0.14);
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -49,6 +50,8 @@
   --danger-text: #fca5a5;
   --success-bg: rgba(74, 222, 128, 0.14);
   --success-text: #86efac;
+
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 
   color-scheme: dark;
 }
@@ -258,6 +261,20 @@ img.avatar {
 .badge-muted {
   background: var(--surface-alt);
   color: var(--text-muted);
+}
+
+/* "Phase 2" tag used on ERM placeholder items (sidebar, detail tab). */
+.phase-tag {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: none;
 }
 
 .star {

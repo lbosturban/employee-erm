@@ -1,0 +1,156 @@
+.company-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: var(--space-4);
+}
+
+.company-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.company-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.company-head h2 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.company-usage {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.company-size {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.company-size-label {
+  align-self: flex-start;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--radius);
+  padding: 2px 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.company-size-hint {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.company-structure-sector,
+.company-ceo {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.company-ceo-none {
+  color: var(--text-muted);
+}
+
+.company-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* Keep each action on a single line; delete stays pushed to the right. */
+.company-actions .btn {
+  white-space: nowrap;
+}
+
+.company-actions .btn-danger {
+  margin-left: auto;
+}
+
+.notice-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.notice-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}
+
+/* Wider than the confirm dialog to fit the five form fields. */
+.company-dialog {
+  max-width: 520px;
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+}
+
+.company-dialog h2 {
+  margin-bottom: var(--space-2);
+}
+
+.company-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field > span,
+.form-field > label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-field em {
+  color: var(--danger);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
+}

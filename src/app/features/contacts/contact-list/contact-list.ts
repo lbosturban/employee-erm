@@ -4,7 +4,6 @@ import { RouterLink } from '@angular/router';
 import { ContactService } from '../../../core/services/contact.service';
 import { CategoryService } from '../../../core/services/category.service';
 import { CompanyService } from '../../../core/services/company.service';
-import { DataTransferService } from '../../../core/services/data-transfer.service';
 import { I18nService } from '../../../core/services/i18n.service';
 import {
   Contact,
@@ -14,8 +13,6 @@ import {
   HR_PROCESS_STATUSES,
 } from '../../../core/models/contact.model';
 import { composeFullName } from '../../../core/models/contact-name.model';
-import { DataSnapshot } from '../../../core/models/snapshot.model';
-import { SCHEMA_VERSION } from '../../../core/services/migration.service';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 import { CatNamePipe } from '../../../core/pipes/category-name.pipe';
 import { AutofocusDirective } from '../../../core/directives/autofocus.directive';
@@ -33,7 +30,7 @@ type HrStatusFilter = HrProcessStatus | '';
 /** Value of the company-activity select: active/inactive or '' (= no filter). */
 type CompanyActiveFilter = 'active' | 'inactive' | '';
 
-/** Full contact directory: search, filter, sort, paginate and import/export. */
+/** Full contact directory: search, filter, sort and paginate. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -55,7 +52,6 @@ export class ContactListPage {
   protected readonly categoryService = inject(CategoryService);
   protected readonly companyService = inject(CompanyService);
   protected readonly i18n = inject(I18nService);
-  private readonly dataTransfer = inject(DataTransferService);
 
   protected readonly pageSize = PAGE_SIZE;
   protected readonly page = signal(1);
@@ -69,9 +65,6 @@ export class ContactListPage {
   protected readonly companyActiveFilter = signal<CompanyActiveFilter>('');
   protected readonly favoritesOnly = signal(false);
   protected readonly sort = signal<ContactSort>('nameAsc');
-
-  protected readonly importMessage = signal<string | null>(null);
-  protected readonly errorMessage = signal<string | null>(null);
 
   /** Contact pending deletion, drives the confirmation dialog. */
   protected readonly pendingDeletion = signal<Contact | null>(null);
@@ -144,43 +137,6 @@ export class ContactListPage {
     if (contact) {
       void this.contactService.remove(contact.id);
       this.pendingDeletion.set(null);
-    }
-  }
-
-  /** Exports the full snapshot: contacts + categories + companies. */
-  exportJson(): void {
-    const snapshot: DataSnapshot = {
-      schemaVersion: SCHEMA_VERSION,
-      categories: this.categoryService.categories(),
-      companies: this.companyService.companies(),
-      contacts: this.contactService.contacts(),
-    };
-    this.dataTransfer.export(snapshot);
-    this.importMessage.set(this.i18n.translate('contacts.exported'));
-  }
-
-  /** Replaces the whole local state from a validated snapshot file. */
-  async importJson(event: Event): Promise<void> {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    this.errorMessage.set(null);
-    if (!file) {
-      return;
-    }
-    try {
-      const snapshot = await this.dataTransfer.import(file);
-      if (
-        !this.categoryService.replaceAll({ categories: snapshot.categories }) ||
-        !this.companyService.replaceAll(snapshot.companies) ||
-        !this.contactService.replaceAll(snapshot.contacts)
-      ) {
-        throw new Error('persist');
-      }
-      this.resetPage();
-      this.importMessage.set(this.i18n.translate('contacts.imported'));
-    } catch {
-      this.errorMessage.set(this.i18n.translate('contacts.importInvalid'));
     }
   }
 }
