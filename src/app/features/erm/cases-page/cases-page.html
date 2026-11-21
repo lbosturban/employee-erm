@@ -1,2 +1,204 @@
-<h1>{{ 'erm.cases' | t }}</h1>
-<p class="erm-stub">{{ caseService.total() }}</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'erm.casesTitle' | t }}</h1>
+      <p class="page-subtitle">{{ 'erm.casesSubtitle' | t }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+      + {{ 'erm.newCase' | t }}
+    </button>
+  </header>
+
+  <div class="case-filters">
+    <label class="filter">
+      <span>{{ 'case.kind' | t }}</span>
+      <select id="filter-kind" class="field" (change)="onKindFilter($event)">
+        <option value="all" [selected]="kindFilter() === 'all'">
+          {{ 'erm.all' | t }}
+        </option>
+        @for (option of kindOptions; track option.value) {
+          <option [value]="option.value" [selected]="kindFilter() === option.value">
+            {{ option.labelKey | t }}
+          </option>
+        }
+      </select>
+    </label>
+    <label class="filter">
+      <span>{{ 'case.status' | t }}</span>
+      <select id="filter-status" class="field" (change)="onStatusFilter($event)">
+        <option value="all" [selected]="statusFilter() === 'all'">
+          {{ 'erm.all' | t }}
+        </option>
+        @for (option of statusOptions; track option.value) {
+          <option [value]="option.value" [selected]="statusFilter() === option.value">
+            {{ option.labelKey | t }}
+          </option>
+        }
+      </select>
+    </label>
+  </div>
+
+  @if (visibleCases().length === 0) {
+    <p class="empty-state">{{ 'erm.emptyCases' | t }}</p>
+  } @else {
+    <div class="case-grid">
+      @for (entry of visibleCases(); track entry.id) {
+        <article class="card case-card">
+          <div class="case-badges">
+            <span class="badge">{{ 'case.kind.' + entry.kind | t }}</span>
+            <span class="badge badge-muted">{{ 'case.status.' + entry.status | t }}</span>
+          </div>
+
+          <h2 class="case-title">{{ entry.title }}</h2>
+
+          @if (entry.description !== '') {
+            <p class="case-desc">{{ entry.description }}</p>
+          }
+
+          <ul class="case-contacts">
+            @for (contact of entry.resolvedContacts; track $index) {
+              <li>
+                @if (contact) {
+                  <span>{{ contact.name | fullName }}</span>
+                } @else {
+                  <span class="case-contact-unknown">{{ 'case.unknownContact' | t }}</span>
+                }
+              </li>
+            }
+          </ul>
+
+          @if (entry.companyId !== null) {
+            <p class="case-company">
+              {{ 'form.company' | t }}: {{ entry.company?.name ?? '—' }}
+            </p>
+          }
+
+          <footer class="case-meta">
+            <span>{{ 'contacts.addedAt' | t }} {{ entry.createdAt | date: 'mediumDate' }}</span>
+            <span>{{ 'contacts.updatedAt' | t }} {{ entry.updatedAt | date: 'mediumDate' }}</span>
+          </footer>
+
+          <div class="case-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              (click)="openEditModal(entry)"
+            >
+              {{ 'erm.edit' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="pendingDeletion.set(entry)"
+            >
+              {{ 'erm.delete' | t }}
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (pendingDeletion(); as caseItem) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteCaseTitle' | t"
+      [message]="'confirm.deleteCaseMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+
+  @if (formOpen()) {
+    <div
+      class="dialog-overlay"
+      role="presentation"
+      (click)="closeModal()"
+      (keydown.escape)="closeModal()"
+    >
+      <div
+        class="dialog case-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="case-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="case-dialog-title">
+          {{ (isEdit() ? 'erm.editCase' : 'erm.newCase') | t }}
+        </h2>
+
+        <form class="case-form" [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+          <div class="form-field">
+            <label for="case-title">{{ 'case.title' | t }} <em aria-hidden="true">*</em></label>
+            <input
+              id="case-title"
+              type="text"
+              class="field"
+              formControlName="title"
+              appAutofocus
+              [attr.aria-invalid]="hasError('title')"
+              [attr.aria-describedby]="hasError('title') ? 'case-title-error' : null"
+            />
+            @if (errorForTitle(); as message) {
+              <span class="form-error" id="case-title-error" role="alert">{{ message }}</span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="case-kind">{{ 'case.kind' | t }} <em aria-hidden="true">*</em></label>
+            <select id="case-kind" class="field" formControlName="kind">
+              @for (option of kindOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="case-status">{{ 'case.status' | t }} <em aria-hidden="true">*</em></label>
+            <select id="case-status" class="field" formControlName="status">
+              @for (option of statusOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="case-description">{{ 'form.description' | t }}</label>
+            <textarea id="case-description" class="field" rows="4" formControlName="description"></textarea>
+          </div>
+
+          <div class="form-field">
+            <label for="case-company">{{ 'form.companyId' | t }}</label>
+            <select id="case-company" class="field" formControlName="companyId">
+              <option value="">{{ 'form.noCompany' | t }}</option>
+              @for (company of companyService.companies(); track company.id) {
+                <option [value]="company.id">{{ company.name }}</option>
+              }
+            </select>
+          </div>
+
+          <fieldset class="form-field case-contact-fieldset" formArrayName="contactIds">
+            <legend>{{ 'case.contactsConcerned' | t }} <em aria-hidden="true">*</em></legend>
+            @for (contact of contacts(); track contact.id; let i = $index) {
+              <label class="case-contact-option">
+                <input type="checkbox" [formControlName]="i" />
+                <span>{{ contact.name | fullName }}</span>
+              </label>
+            }
+            @if (contactsInvalid()) {
+              <span class="form-error" id="case-contacts-error" role="alert">
+                {{ 'form.required' | t }}
+              </span>
+            }
+          </fieldset>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" (click)="closeModal()">
+              {{ 'form.cancel' | t }}
+            </button>
+            <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

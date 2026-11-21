@@ -1,3 +1,189 @@
-.erm-stub {
+/* ---- Filters ---- */
+
+.case-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter > span {
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-muted);
+}
+
+.filter select {
+  min-width: 180px;
+}
+
+/* ---- Case grid ---- */
+
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.case-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.case-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.case-title {
+  margin: 0;
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.case-desc {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.case-contacts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  font-size: 0.85rem;
+}
+
+.case-contacts li {
+  display: inline;
+}
+
+.case-contact-unknown {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.case-company {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.case-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: var(--space-2);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.case-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+/* Keep each action on a single line; delete stays pushed to the right. */
+.case-actions .btn {
+  white-space: nowrap;
+}
+
+.case-actions .btn-danger {
+  margin-left: auto;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}
+
+/* ---- Modal form ---- */
+
+.case-dialog {
+  max-width: 520px;
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+}
+
+.case-dialog h2 {
+  margin-bottom: var(--space-2);
+}
+
+.case-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field > label,
+.form-field > legend {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-field em {
+  color: var(--danger);
+}
+
+.case-contact-fieldset {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  margin: 0;
+}
+
+.case-contact-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.88rem;
+  font-weight: 400;
+  color: var(--text);
+  padding: 2px 0;
+}
+
+.case-contact-option input {
+  accent-color: var(--accent);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
 }

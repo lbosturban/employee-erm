@@ -1,3 +1,256 @@
-.erm-stub {
+/* Filter bar above the card list */
+.threat-filter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.threat-filter label {
+  font-size: 0.85rem;
+  font-weight: 600;
   color: var(--text-muted);
+}
+
+.threat-filter select {
+  max-width: 220px;
+}
+
+.threat-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-4);
+}
+
+.threat-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.threat-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  justify-content: space-between;
+}
+
+.threat-subject {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.threat-meta,
+.threat-company {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.threat-meta-label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.threat-progress {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.threat-created {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+}
+
+.threat-badge-no-risk,
+.threat-badge-unknown {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.threat-badge-minor {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.threat-badge-moderate {
+  background: var(--star);
+  color: #fff;
+}
+
+.threat-badge-major,
+.threat-badge-imminent {
+  background: var(--danger);
+  color: #fff;
+}
+
+.threat-badge-imminent {
+  font-weight: 800;
+}
+
+.threat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.threat-actions .btn {
+  white-space: nowrap;
+}
+
+.threat-actions .btn-danger {
+  margin-left: auto;
+}
+
+/* Expanded DCJS sections */
+.threat-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+.threat-section-row {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+}
+
+.threat-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.threat-section-title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 0;
+}
+
+.threat-findings {
+  margin: var(--space-1) 0 0;
+  font-size: 0.84rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.notice-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.notice-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}
+
+/* Modal: scrollable, narrow columns per DCJS section */
+.threat-dialog {
+  max-width: 560px;
+  width: min(560px, 100%);
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+}
+
+.threat-dialog h2 {
+  margin-bottom: var(--space-2);
+}
+
+.threat-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field > span,
+.form-field > label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-field em {
+  color: var(--danger);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.form-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+}
+
+.threat-section-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.threat-section-legend {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0 var(--space-1);
+}
+
+.threat-severity-select {
+  max-width: 180px;
+}
+
+textarea.field {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
 }

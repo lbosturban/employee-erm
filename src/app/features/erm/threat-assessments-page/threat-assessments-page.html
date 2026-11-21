@@ -1,2 +1,227 @@
-<h1>{{ 'erm.threatAssessments' | t }}</h1>
-<p class="erm-stub">{{ threatAssessmentService.total() }}</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'erm.threatTitle' | t }}</h1>
+      <p class="page-subtitle">{{ 'erm.threatSubtitle' | t }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+      + {{ 'erm.newThreat' | t }}
+    </button>
+  </header>
+
+  <div class="threat-filter">
+    <label for="threat-filter">{{ 'threat.overall' | t }}</label>
+    <select
+      id="threat-filter"
+      class="field"
+      [value]="filterLevel()"
+      (change)="onFilterChange($event)"
+    >
+      <option value="all">{{ 'erm.all' | t }}</option>
+      @for (option of levelOptions; track option.value) {
+        <option [value]="option.value">{{ option.labelKey | t }}</option>
+      }
+    </select>
+  </div>
+
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">
+      <span>{{ message }}</span>
+      <button type="button" class="notice-close" (click)="dismissError()" aria-label="Close">
+        ×
+      </button>
+    </p>
+  }
+
+  @if (filtered().length === 0) {
+    <p class="empty-state">{{ 'erm.emptyThreats' | t }}</p>
+  } @else {
+    <div class="threat-list">
+      @for (assessment of filtered(); track assessment.id) {
+        <article class="card threat-card">
+          <div class="threat-head">
+            <h2 class="threat-subject">{{ subjectName(assessment) }}</h2>
+            <span [class]="levelBadgeClass(assessment.overallThreat)">
+              {{ ('threat.level.' + assessment.overallThreat) | t }}
+            </span>
+          </div>
+
+          <p class="threat-meta">
+            <span class="threat-meta-label">{{ 'threat.subject' | t }}:</span>
+            {{ subjectName(assessment) }}
+          </p>
+
+          @if (companyOf(assessment); as company) {
+            <p class="threat-company">{{ 'form.companyId' | t }}: {{ company.name }}</p>
+          }
+
+          <p class="threat-progress">
+            <span class="badge badge-muted">
+              {{ progressOf(assessment) }}/10 {{ 'threat.sectionsProgress' | t }}
+            </span>
+            <span class="threat-created">
+              {{ 'contacts.addedAt' | t }} {{ assessment.createdAt | date: 'mediumDate' }}
+            </span>
+          </p>
+
+          <div class="threat-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [attr.aria-expanded]="expandedId() === assessment.id"
+              [attr.aria-controls]="'threat-details-' + assessment.id"
+              (click)="toggleExpanded(assessment.id)"
+            >
+              {{ 'contacts.detail' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-ghost"
+              [attr.aria-label]="'erm.editThreat' | t"
+              (click)="openEditModal(assessment)"
+            >
+              {{ 'erm.edit' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              [attr.aria-label]="'erm.delete' | t"
+              (click)="pendingDeletion.set(assessment)"
+            >
+              {{ 'erm.delete' | t }}
+            </button>
+          </div>
+
+          @if (expandedId() === assessment.id) {
+            <div class="threat-details" id="threat-details-{{ assessment.id }}">
+              @for (entry of assessment.sections; track entry.section) {
+                <div class="threat-section-row">
+                  <div class="threat-section-head">
+                    <h3 class="threat-section-title">
+                      {{ sectionLabelKey(entry.section) | t }}
+                    </h3>
+                    <span [class]="severityBadgeClass(entry.severity)">
+                      {{ severityLabelKey(entry.severity) | t }}
+                    </span>
+                  </div>
+                  <p class="threat-findings">{{ entry.findings }}</p>
+                </div>
+              }
+            </div>
+          }
+        </article>
+      }
+    </div>
+  }
+
+  @if (pendingDeletion(); as assessment) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteThreatTitle' | t"
+      [message]="'confirm.deleteThreatMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+
+  @if (formOpen()) {
+    <div
+      class="dialog-overlay"
+      role="presentation"
+      (click)="closeModal()"
+      (keydown.escape)="closeModal()"
+    >
+      <div
+        class="dialog threat-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="threat-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="threat-dialog-title">
+          {{ (isEdit() ? 'erm.editThreat' : 'erm.newThreat') | t }}
+        </h2>
+
+        <form class="threat-form" [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+          <div class="form-field">
+            <label for="threat-contact">
+              {{ 'threat.subject' | t }} <em aria-hidden="true">*</em>
+            </label>
+            <select
+              id="threat-contact"
+              class="field"
+              formControlName="contactId"
+              appAutofocus
+              [attr.aria-invalid]="hasError('contactId')"
+              [attr.aria-describedby]="hasError('contactId') ? 'threat-contact-error' : null"
+            >
+              <option value="">{{ 'form.selectPlaceholder' | t }}</option>
+              @for (contact of contacts(); track contact.id) {
+                <option [value]="contact.id">{{ contact.name | fullName }}</option>
+              }
+            </select>
+            @if (hasError('contactId')) {
+              <span class="form-error" id="threat-contact-error" role="alert">
+                {{ 'form.required' | t }}
+              </span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="threat-company">{{ 'form.companyId' | t }}</label>
+            <select id="threat-company" class="field" formControlName="companyId">
+              <option value="">{{ 'form.noCompany' | t }}</option>
+              @for (company of companies(); track company.id) {
+                <option [value]="company.id">{{ company.name }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="threat-overall">{{ 'threat.overall' | t }}</label>
+            <select id="threat-overall" class="field" formControlName="overallThreat">
+              @for (option of levelOptions; track option.value) {
+                <option [value]="option.value">{{ option.labelKey | t }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-sections" formArrayName="sections">
+            @for (section of sectionKeys; track section; let i = $index) {
+              <fieldset class="threat-section-field" [formGroupName]="$index">
+                <legend class="threat-section-legend">
+                  {{ sectionLabelKey(section) | t }}
+                </legend>
+                <div class="form-field">
+                  <label [for]="'findings-' + section">{{ 'threat.findings' | t }}</label>
+                  <textarea
+                    [id]="'findings-' + section"
+                    rows="3"
+                    class="field"
+                    formControlName="findings"
+                  ></textarea>
+                </div>
+                <select
+                  [id]="'severity-' + section"
+                  class="field threat-severity-select"
+                  formControlName="severity"
+                  [attr.aria-label]="sectionLabelKey(section) | t"
+                >
+                  @for (option of severityOptions; track option.value) {
+                    <option [value]="option.value">{{ option.labelKey | t }}</option>
+                  }
+                </select>
+              </fieldset>
+            }
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" (click)="closeModal()">
+              {{ 'form.cancel' | t }}
+            </button>
+            <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>

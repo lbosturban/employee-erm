@@ -1,3 +1,214 @@
-.erm-stub {
+/* ---- Filters ---- */
+
+.escalation-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+/* ---- List ---- */
+
+.escalation-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.escalation-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+}
+
+.escalation-ladder {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 1rem;
+}
+
+.escalation-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 700;
+}
+
+.escalation-arrow {
   color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.escalation-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Ladder level badges (source and target sides). */
+.escalation-level-superior {
+  background: var(--surface-alt);
+  color: var(--text);
+}
+
+.escalation-level-management {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.escalation-level-hr {
+  background: var(--success-bg);
+  color: var(--success-text);
+}
+
+.escalation-level-legal {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.escalation-purpose {
+  background: var(--accent);
+  color: #fff;
+}
+
+.escalation-case {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.escalation-case-label {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.escalation-notes {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.escalation-date {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.escalation-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.escalation-actions .btn {
+  white-space: nowrap;
+}
+
+.escalation-actions .btn-danger {
+  margin-left: auto;
+}
+
+.notice-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border-radius: var(--radius);
+  padding: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.notice-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: inherit;
+  line-height: 1;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: var(--space-8) 0;
+}
+
+/* ---- Modal form ---- */
+
+/* Wider than the confirm dialog to fit the ladder form. */
+.escalation-dialog {
+  max-width: 560px;
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+}
+
+.escalation-dialog h2 {
+  margin-bottom: var(--space-2);
+}
+
+.escalation-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.escalation-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.escalation-form .form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.escalation-form .form-field > span,
+.escalation-form .form-field > label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.escalation-form .form-field em {
+  color: var(--danger);
+}
+
+.escalation-form .field {
+  width: 100%;
+  min-width: 0;
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-4);
+}
+
+@media (max-width: 560px) {
+  .escalation-form-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

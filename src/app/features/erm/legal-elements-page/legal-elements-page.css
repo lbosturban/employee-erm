@@ -1,3 +1,212 @@
-.erm-stub {
+.empty-state {
+  text-align: center;
   color: var(--text-muted);
+  padding: var(--space-8) 0;
+}
+
+.bundle-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-4);
+}
+
+.bundle-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+}
+
+.bundle-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.bundle-owner {
+  margin: 0;
+  font-size: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.bundle-owner-label {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: var(--space-1);
+}
+
+.bundle-date {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.bundle-company {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.legal-section {
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-2);
+}
+
+.legal-section-title {
+  margin: 0 0 var(--space-1);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.legal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.reference-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.reference-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.reference-label {
+  font-size: 0.88rem;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.reference-location {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.reference-link {
+  font-size: 0.8rem;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.reference-remove {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.reference-remove:hover {
+  border-color: var(--danger);
+}
+
+.reference-empty {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.bundle-actions {
+  display: flex;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+}
+
+.bundle-actions .btn {
+  white-space: nowrap;
+}
+
+.bundle-actions .btn-danger {
+  margin-left: auto;
+}
+
+.reference-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+}
+
+.reference-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-3);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-field > span,
+.form-field > label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-field em {
+  color: var(--danger);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 0.8rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  border-top: 1px solid var(--border);
+  padding-top: var(--space-3);
+}
+
+/* Modal kept narrow: two selects only. */
+.bundle-dialog {
+  max-width: 420px;
+  max-height: calc(100vh - 2 * var(--space-4));
+  overflow-y: auto;
+}
+
+.bundle-dialog h2 {
+  margin-bottom: var(--space-2);
+}
+
+.bundle-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }

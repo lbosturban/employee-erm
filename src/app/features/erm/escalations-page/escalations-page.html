@@ -1,2 +1,292 @@
-<h1>{{ 'erm.escalations' | t }}</h1>
-<p class="erm-stub">{{ escalationService.total() }}</p>
+<section class="page">
+  <header class="page-header">
+    <div>
+      <h1>{{ 'erm.escalationsTitle' | t }}</h1>
+      <p class="page-subtitle">{{ 'erm.escalationsSubtitle' | t }}</p>
+    </div>
+    <button type="button" class="btn btn-primary" (click)="openCreateModal()">
+      + {{ 'erm.newEscalation' | t }}
+    </button>
+  </header>
+
+  @if (errorMessage(); as message) {
+    <p class="notice notice-error" role="alert">
+      <span>{{ message }}</span>
+      <button
+        type="button"
+        class="notice-close"
+        (click)="dismissError()"
+        aria-label="Close"
+      >
+        ×
+      </button>
+    </p>
+  }
+
+  <div class="escalation-filters">
+    <div class="form-field">
+      <label for="escalation-filter-purpose">{{ 'escalation.purpose' | t }}</label>
+      <!-- Placeholder for a missing i18n key ('escalation.filterAll'). -->
+      <select
+        id="escalation-filter-purpose"
+        class="field"
+        (change)="onPurposeFilter($event)"
+      >
+        <option value="all">All</option>
+        @for (option of purposeOptions; track option.value) {
+          <option [value]="option.value">{{ option.labelKey | t }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-field">
+      <label for="escalation-filter-target-level">
+        {{ 'escalation.targetLevel' | t }}
+      </label>
+      <!-- Placeholder for a missing i18n key ('escalation.filterAll'). -->
+      <select
+        id="escalation-filter-target-level"
+        class="field"
+        (change)="onTargetLevelFilter($event)"
+      >
+        <option value="all">All</option>
+        @for (option of levelOptions; track option.value) {
+          <option [value]="option.value">{{ option.labelKey | t }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (filteredEscalations().length === 0) {
+    <p class="empty-state">{{ 'erm.emptyEscalations' | t }}</p>
+  } @else {
+    <ul class="escalation-list">
+      @for (escalation of filteredEscalations(); track escalation.id) {
+        <li class="card escalation-card">
+          <h2 class="escalation-ladder">
+            <span class="escalation-name">
+              {{ contactById(escalation.sourceContactId)?.name ?? null | fullName }}
+            </span>
+            <span
+              class="escalation-arrow"
+              role="img"
+              [attr.aria-label]="arrowAriaLabel(escalation)"
+              aria-hidden="false"
+            >
+              →
+            </span>
+            <span class="escalation-name">
+              {{ contactById(escalation.targetContactId)?.name ?? null | fullName }}
+            </span>
+          </h2>
+
+          <div class="escalation-badges">
+            <span [class]="'badge escalation-level escalation-level-' + escalation.sourceLevel">
+              {{ 'escalation.level.' + escalation.sourceLevel | t }}
+            </span>
+            <span [class]="'badge escalation-level escalation-level-' + escalation.targetLevel">
+              {{ 'escalation.level.' + escalation.targetLevel | t }}
+            </span>
+            <span class="badge escalation-purpose">
+              {{ 'escalation.purpose.' + escalation.purpose | t }}
+            </span>
+          </div>
+
+          @if (caseTitle(escalation.mediationCaseId); as title) {
+            <p class="escalation-case">
+              <span class="escalation-case-label">
+                {{ 'escalation.mediationCase' | t }}:
+              </span>
+              {{ title }}
+            </p>
+          }
+
+          @if (escalation.notes !== '') {
+            <p class="escalation-notes">{{ escalation.notes }}</p>
+          }
+
+          <p class="escalation-date">
+            {{ 'contacts.addedAt' | t }}
+            <time [attr.datetime]="escalation.createdAt">
+              {{ escalation.createdAt | date: 'medium' }}
+            </time>
+          </p>
+
+          <div class="escalation-actions">
+            <button
+              type="button"
+              class="btn btn-ghost"
+              (click)="openEditModal(escalation)"
+            >
+              {{ 'erm.edit' | t }}
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger"
+              (click)="pendingDeletion.set(escalation)"
+            >
+              {{ 'erm.delete' | t }}
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (pendingDeletion(); as escalation) {
+    <app-confirm-dialog
+      [title]="'confirm.deleteEscalationTitle' | t"
+      [message]="'confirm.deleteEscalationMessage' | t"
+      (confirmed)="confirmPendingDeletion()"
+      (cancelled)="pendingDeletion.set(null)"
+    />
+  }
+
+  @if (formOpen()) {
+    <div
+      class="dialog-overlay"
+      role="presentation"
+      (click)="closeModal()"
+      (keydown.escape)="closeModal()"
+    >
+      <div
+        class="dialog escalation-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="escalation-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="escalation-dialog-title">
+          {{ (isEdit() ? 'erm.editEscalation' : 'erm.newEscalation') | t }}
+        </h2>
+
+        <form class="escalation-form" [formGroup]="form" (ngSubmit)="onSave()" novalidate>
+          <div class="form-field">
+            <label for="escalation-source-contact">
+              {{ 'escalation.source' | t }} <em aria-hidden="true">*</em>
+            </label>
+            <select
+              id="escalation-source-contact"
+              class="field"
+              formControlName="sourceContactId"
+              appAutofocus
+              [attr.aria-invalid]="hasError('sourceContactId')"
+              [attr.aria-describedby]="
+                hasError('sourceContactId') ? 'escalation-source-error' : null
+              "
+            >
+              <option value="">{{ 'erm.all' | t }}</option>
+              @for (contact of contacts(); track contact.id) {
+                <option [value]="contact.id">{{ contact.name | fullName }}</option>
+              }
+            </select>
+            @if (errorFor('sourceContactId'); as message) {
+              <span class="form-error" id="escalation-source-error" role="alert">
+                {{ message }}
+              </span>
+            }
+          </div>
+
+          <div class="form-field">
+            <label for="escalation-target-contact">
+              {{ 'escalation.target' | t }} <em aria-hidden="true">*</em>
+            </label>
+            <select
+              id="escalation-target-contact"
+              class="field"
+              formControlName="targetContactId"
+              [attr.aria-invalid]="hasError('targetContactId')"
+              [attr.aria-describedby]="
+                hasError('targetContactId') ? 'escalation-target-error' : null
+              "
+            >
+              <option value="">{{ 'erm.all' | t }}</option>
+              @for (contact of contacts(); track contact.id) {
+                <option [value]="contact.id">{{ contact.name | fullName }}</option>
+              }
+            </select>
+            @if (errorFor('targetContactId'); as message) {
+              <span class="form-error" id="escalation-target-error" role="alert">
+                {{ message }}
+              </span>
+            }
+          </div>
+
+          <div class="escalation-form-grid">
+            <div class="form-field">
+              <label for="escalation-source-level">
+                {{ 'escalation.sourceLevel' | t }}
+              </label>
+              <select
+                id="escalation-source-level"
+                class="field"
+                formControlName="sourceLevel"
+              >
+                @for (option of levelOptions; track option.value) {
+                  <option [value]="option.value">{{ option.labelKey | t }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="escalation-target-level">
+                {{ 'escalation.targetLevel' | t }}
+              </label>
+              <select
+                id="escalation-target-level"
+                class="field"
+                formControlName="targetLevel"
+              >
+                @for (option of levelOptions; track option.value) {
+                  <option [value]="option.value">{{ option.labelKey | t }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="escalation-purpose">{{ 'escalation.purpose' | t }}</label>
+              <select id="escalation-purpose" class="field" formControlName="purpose">
+                @for (option of purposeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.labelKey | t }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-field">
+              <label for="escalation-mediation">
+                {{ 'escalation.mediationCase' | t }}
+              </label>
+              <select
+                id="escalation-mediation"
+                class="field"
+                formControlName="mediationCaseId"
+              >
+                <option value="">{{ 'escalation.mediationNone' | t }}</option>
+                @for (entry of cases(); track entry.id) {
+                  <option [value]="entry.id">{{ entry.title }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="escalation-notes">{{ 'escalation.notes' | t }}</label>
+            <textarea
+              id="escalation-notes"
+              class="field"
+              formControlName="notes"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn btn-ghost" (click)="closeModal()">
+              {{ 'form.cancel' | t }}
+            </button>
+            <button type="submit" class="btn btn-primary">{{ 'form.save' | t }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</section>
