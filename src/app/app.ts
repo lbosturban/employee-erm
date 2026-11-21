@@ -6,7 +6,7 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet, NavigationEnd } from '@angular/router';
 import { ThemeService } from './core/services/theme.service';
 import { I18nService } from './core/services/i18n.service';
 import { TranslatePipe } from './core/pipes/translate.pipe';
@@ -63,6 +63,17 @@ export class App {
   protected readonly toast = signal<string | null>(null);
   private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // ── Sidebar foldable groups (narrow screens) ─────────────────────────
+  /** Sidebar groups that form the folding accordion: CRM, ERM, AI. */
+  private static readonly NAV_GROUPS = ['crm', 'erm', 'ai'] as const;
+
+  /** True while the sidebar renders as the strip under the header. */
+  protected readonly mobileNav = signal(false);
+
+  /** Group currently unfolded on narrow screens (null = all folded). */
+  protected readonly mobileNavGroup =
+    signal<(typeof App.NAV_GROUPS)[number] | null>(null);
+
   // ── Header quick search ──────────────────────────────────────────────
   /** Debounced term emitted by appDebounceInput on the search input. */
   readonly quickSearch = signal('');
@@ -102,6 +113,53 @@ export class App {
       document.removeEventListener('click', onDocumentClick);
       document.removeEventListener('keydown', onKeyDown);
     });
+
+    // ── Narrow-viewport sidebar accordion ────────────────────────────
+    // On wide screens every group stays expanded (CSS keeps its classic
+    // look); under the breakpoint only the section titles show until
+    // their group is unfolded from behind the title itself.
+    // matchMedia is guarded for non-browser environments (unit tests).
+    const navQuery =
+      typeof window.matchMedia === 'function' ? window.matchMedia('(max-width: 900px)') : null;
+    if (navQuery !== null) {
+      this.mobileNav.set(navQuery.matches);
+      const onNavQueryChange = (event: MediaQueryListEvent): void => {
+        this.mobileNav.set(event.matches);
+        if (!event.matches) {
+          this.mobileNavGroup.set(null);
+        }
+      };
+      navQuery.addEventListener('change', onNavQueryChange);
+      inject(DestroyRef).onDestroy(() => {
+        navQuery.removeEventListener('change', onNavQueryChange);
+      });
+    }
+
+    // Navigate → fold the accordion back so the strip stays compact.
+    const onNavEnd = this.router.events.subscribe((event) => {
+      if (event instanceof NavigationEnd) {
+        this.closeMobileNavGroup();
+      }
+    });
+
+    inject(DestroyRef).onDestroy(() => {
+      onNavEnd.unsubscribe();
+    });
+  }
+
+  /** Whether a group's links should render expanded right now. */
+  protected isGroupOpen(group: (typeof App.NAV_GROUPS)[number]): boolean {
+    return !this.mobileNav() || this.mobileNavGroup() === group;
+  }
+
+  /** Accordion toggle: opening a group closes the other two. */
+  protected toggleNavGroup(group: (typeof App.NAV_GROUPS)[number]): void {
+    this.mobileNavGroup.update((current) => (current === group ? null : group));
+  }
+
+  /** Refolds the accordion (used after in-app navigations). */
+  protected closeMobileNavGroup(): void {
+    this.mobileNavGroup.set(null);
   }
 
   onSearchTerm(term: string): void {

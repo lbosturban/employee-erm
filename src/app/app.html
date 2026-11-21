@@ -136,35 +136,96 @@
 
   <div class="app-body">
     <nav class="sidebar" aria-label="Main navigation">
-      <span class="sidebar-group">{{ 'nav.crmGroup' | t }}</span>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        {{ 'nav.dashboard' | t }}
-      </a>
-      <a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | t }}</a>
-      <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | t }}</a>
-      <a routerLink="/companies" routerLinkActive="active">{{ 'nav.companies' | t }}</a>
-      <a routerLink="/favorites" routerLinkActive="active">{{ 'nav.favorites' | t }}</a>
-      <span class="sidebar-cta-group">
-        <a routerLink="/contacts/new" class="nav-cta">+ {{ 'nav.newContact' | t }}</a>
-        <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
-      </span>
+      <!-- Each group folds behind its section title on narrow screens
+           (accordion, one group open at a time); on wide screens the
+           titles render as static section headers and every group stays
+           expanded. -->
+      <div class="nav-section">
+        <button
+          type="button"
+          class="sidebar-group nav-group-toggle"
+          aria-controls="nav-section-crm"
+          [attr.aria-expanded]="isGroupOpen('crm')"
+          (click)="toggleNavGroup('crm')"
+        >
+          {{ 'nav.crmGroup' | t }}
+          <span class="nav-group-chevron" aria-hidden="true">{{
+            isGroupOpen('crm') ? '⌃' : '⌄'
+          }}</span>
+        </button>
+        <div
+          class="nav-section-content"
+          id="nav-section-crm"
+          [class.open]="isGroupOpen('crm')"
+        >
+          <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            {{ 'nav.dashboard' | t }}
+          </a>
+          <a routerLink="/contacts" routerLinkActive="active">{{ 'nav.contacts' | t }}</a>
+          <a routerLink="/categories" routerLinkActive="active">{{ 'nav.categories' | t }}</a>
+          <a routerLink="/companies" routerLinkActive="active">{{ 'nav.companies' | t }}</a>
+          <a routerLink="/favorites" routerLinkActive="active">{{ 'nav.favorites' | t }}</a>
+          <span class="sidebar-cta-group">
+            <a routerLink="/contacts/new" class="nav-cta">+ {{ 'nav.newContact' | t }}</a>
+            <a routerLink="/categories/new" class="nav-cta">+ {{ 'categories.new' | t }}</a>
+          </span>
+        </div>
+      </div>
 
-      <span class="sidebar-group">{{ 'nav.ermGroup' | t }}</span>
-      <!-- Phase-2 (ERM) product line — drives the brand switch when active. -->
-      <a routerLink="/erm/cases" routerLinkActive="active">{{ 'erm.cases' | t }}</a>
-      <a routerLink="/erm/escalations" routerLinkActive="active">{{ 'erm.escalations' | t }}</a>
-      <a routerLink="/erm/threat-assessments" routerLinkActive="active">{{
-        'erm.threatAssessments' | t
-      }}</a>
-      <a routerLink="/erm/legal-elements" routerLinkActive="active">{{
-        'erm.legalElements' | t
-      }}</a>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="sidebar-group nav-group-toggle"
+          aria-controls="nav-section-erm"
+          [attr.aria-expanded]="isGroupOpen('erm')"
+          (click)="toggleNavGroup('erm')"
+        >
+          {{ 'nav.ermGroup' | t }}
+          <span class="nav-group-chevron" aria-hidden="true">{{
+            isGroupOpen('erm') ? '⌃' : '⌄'
+          }}</span>
+        </button>
+        <div
+          class="nav-section-content"
+          id="nav-section-erm"
+          [class.open]="isGroupOpen('erm')"
+        >
+          <!-- Phase-2 (ERM) product line — drives the brand switch when active. -->
+          <a routerLink="/erm/cases" routerLinkActive="active">{{ 'erm.cases' | t }}</a>
+          <a routerLink="/erm/escalations" routerLinkActive="active">{{ 'erm.escalations' | t }}</a>
+          <a routerLink="/erm/threat-assessments" routerLinkActive="active">{{
+            'erm.threatAssessments' | t
+          }}</a>
+          <a routerLink="/erm/legal-elements" routerLinkActive="active">{{
+            'erm.legalElements' | t
+          }}</a>
+        </div>
+      </div>
 
-      <span class="sidebar-group">{{ 'nav.aiGroup' | t }}</span>
-      <!-- Phase-3 (AI Agent) entry point — also flips the brand when active. -->
-      <a routerLink="/ai-agent" routerLinkActive="active" class="nav-cta ai-cta">{{
-        'ai.start' | t
-      }}</a>
+      <div class="nav-section">
+        <button
+          type="button"
+          class="sidebar-group nav-group-toggle"
+          aria-controls="nav-section-ai"
+          [attr.aria-expanded]="isGroupOpen('ai')"
+          (click)="toggleNavGroup('ai')"
+        >
+          {{ 'nav.aiGroup' | t }}
+          <span class="nav-group-chevron" aria-hidden="true">{{
+            isGroupOpen('ai') ? '⌃' : '⌄'
+          }}</span>
+        </button>
+        <div
+          class="nav-section-content"
+          id="nav-section-ai"
+          [class.open]="isGroupOpen('ai')"
+        >
+          <!-- Phase-3 (AI Agent) entry point — also flips the brand when active. -->
+          <a routerLink="/ai-agent" routerLinkActive="active" class="nav-cta ai-cta">{{
+            'ai.start' | t
+          }}</a>
+        </div>
+      </div>
     </nav>
 
     <main id="main" class="app-main" tabindex="-1">

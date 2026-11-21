@@ -105,4 +105,46 @@ describe('App', () => {
     expect(compiled.querySelectorAll('.sidebar-item-disabled').length).toBe(0);
     expect(compiled.querySelector('.phase-tag')).toBeNull();
   });
+
+  it('folds the three nav groups behind their titles on narrow screens', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const app = fixture.componentInstance;
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    // Exactly three section-title toggles (CRM, ERM, AI Agent).
+    const toggles = [...compiled.querySelectorAll('.nav-group-toggle')];
+    expect(toggles).toHaveLength(3);
+
+    // On wide screens (default in tests) every group stays expanded.
+    expect(app['isGroupOpen']('crm')).toBe(true);
+    expect(app['isGroupOpen']('erm')).toBe(true);
+    expect(app['isGroupOpen']('ai')).toBe(true);
+
+    // Simulate the mobile strip: groups fold behind their titles.
+    app['mobileNav'].set(true);
+    fixture.detectChanges();
+    expect(app['isGroupOpen']('crm')).toBe(false);
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('false');
+
+    // Accordion: opening a group closes the others, clicking again folds.
+    app['toggleNavGroup']('crm');
+    fixture.detectChanges();
+    expect(app['isGroupOpen']('crm')).toBe(true);
+    expect(app['isGroupOpen']('erm')).toBe(false);
+    expect(app['isGroupOpen']('ai')).toBe(false);
+    expect(toggles[0].getAttribute('aria-expanded')).toBe('true');
+
+    app['toggleNavGroup']('erm');
+    expect(app['isGroupOpen']('crm')).toBe(false);
+    expect(app['isGroupOpen']('erm')).toBe(true);
+
+    app['toggleNavGroup']('erm');
+    expect(app['isGroupOpen']('erm')).toBe(false);
+
+    // Navigation folds the strip back to the three titles.
+    app['toggleNavGroup']('ai');
+    app['closeMobileNavGroup']();
+    expect(app['isGroupOpen']('ai')).toBe(false);
+  });
 });
