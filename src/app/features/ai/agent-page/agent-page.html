@@ -46,7 +46,11 @@
               {{ 'ai.thinking' | t }}
             </p>
           } @else {
-            <p class="agent-response-text">{{ entry.response }}</p>
+            <p class="agent-response-prefix">{{ 'ai.stubResponsePrefix' | t }}</p>
+            <div class="agent-response-quote">
+              <p class="agent-response-action">{{ 'ai.stubResponseAction' | t }}</p>
+              <p class="agent-response-text">{{ entry.text }}</p>
+            </div>
           }
         </div>
       }

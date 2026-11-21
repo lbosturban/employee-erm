@@ -130,15 +130,19 @@ describe('AgentPage', () => {
       expect(thinking.textContent).toContain('Thinking');
       expect(fixture.nativeElement.querySelector('.agent-response-text')).toBeNull();
 
-      // After the simulated delay the response lands, quoting the instruction.
+      // After the simulated delay the response lands: a bar-free prefix,
+      // then a quoted part (action line + echoed prompt).
       vi.advanceTimersByTime(900);
       fixture.detectChanges();
-      const response = fixture.nativeElement.querySelector(
-        '.agent-response-text',
-      ) as HTMLElement;
+      const response = fixture.nativeElement.querySelector('.agent-response-text') as HTMLElement;
       expect(response).not.toBeNull();
-      expect(response.textContent).toContain('Simulated response (stub)');
       expect(response.textContent).toContain('run the ERM diagnostic');
+      const prefix = fixture.nativeElement.querySelector('.agent-response-prefix') as HTMLElement;
+      expect(prefix.textContent).toContain('Simulated response (stub)');
+      const action = fixture.nativeElement.querySelector('.agent-response-action') as HTMLElement;
+      expect(action.textContent).toContain('The agent would process this instruction');
+      // The quoted part is kept on its own line-block with the accent bar.
+      expect(fixture.nativeElement.querySelector('.agent-response-quote')).not.toBeNull();
       expect(fixture.nativeElement.querySelector('.agent-thinking')).toBeNull();
     } finally {
       vi.useRealTimers();

@@ -148,8 +148,8 @@ const EN: Dictionary = {
   'ai.empty': 'No instruction sent yet.',
   'ai.transcript': 'Instruction transcript',
   'ai.thinking': 'Thinking…',
-  'ai.stubResponsePrefix':
-    'Simulated response (stub) — once the sovereign in-app AI is integrated, the agent would process this instruction:',
+  'ai.stubResponsePrefix': 'Simulated response (stub) —',
+  'ai.stubResponseAction': 'The agent would process this instruction:',
   'search.placeholder': 'Search a contact…',
   'search.noResults': 'No contact found.',
   'data.export': 'Export the full database as JSON',
@@ -495,8 +495,8 @@ const FR: Dictionary = {
   'ai.empty': 'Aucune instruction envoyée pour le moment.',
   'ai.transcript': 'Historique des instructions',
   'ai.thinking': 'Réflexion…',
-  'ai.stubResponsePrefix':
-    'Réponse simulée (bouchon) — une fois l’IA souveraine intégrée, l’agent traiterait cette instruction :',
+  'ai.stubResponsePrefix': 'Réponse simulée (bouchon) —',
+  'ai.stubResponseAction': 'L’agent traiterait cette instruction :',
   'search.placeholder': 'Rechercher un contact…',
   'search.noResults': 'Aucun contact trouvé.',
   'data.export': 'Exporter la base complète en JSON',

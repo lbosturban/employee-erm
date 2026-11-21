@@ -6,7 +6,6 @@ import {
   signal,
 } from '@angular/core';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
-import { I18nService } from '../../../core/services/i18n.service';
 import { generateId } from '../../../core/utils/id';
 
 /**
@@ -23,8 +22,6 @@ interface AgentEntry {
   expanded: boolean;
   /** True between submission and the simulated response landing. */
   thinking: boolean;
-  /** Simulated stub response; empty while still thinking. */
-  response: string;
 }
 
 /**
@@ -44,8 +41,6 @@ interface AgentEntry {
 export class AgentPage {
   /** Simulated thinking delay before the stub response lands. */
   private static readonly THINKING_DELAY_MS = 900;
-
-  private readonly i18n = inject(I18nService);
 
   private readonly pendingTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -87,10 +82,10 @@ export class AgentPage {
     const id = generateId();
     this.entries.update((current) => [
       ...current,
-      { id, text, expanded: false, thinking: true, response: '' },
+      { id, text, expanded: false, thinking: true },
     ]);
     this.draft.set('');
-    this.scheduleStubResponse(id, text);
+    this.scheduleStubResponse(id);
   }
 
   protected onDraftInput(event: Event): void {
@@ -106,22 +101,14 @@ export class AgentPage {
 
   /**
    * Fakes the agent round-trip: after a short "thinking" pause the entry
-   * receives a translated stub response that re-quotes the instruction.
+   * is marked answered and the template renders the stub response body.
    * The real integration will replace this stub logic entirely.
    */
-  private scheduleStubResponse(id: string, instruction: string): void {
+  private scheduleStubResponse(id: string): void {
     const timer = setTimeout(() => {
       this.pendingTimers.delete(id);
       this.entries.update((current) =>
-        current.map((entry) =>
-          entry.id === id
-            ? {
-                ...entry,
-                thinking: false,
-                response: `${this.i18n.translate('ai.stubResponsePrefix')} "${instruction}"`,
-              }
-            : entry,
-        ),
+        current.map((entry) => (entry.id === id ? { ...entry, thinking: false } : entry)),
       );
     }, AgentPage.THINKING_DELAY_MS);
     this.pendingTimers.set(id, timer);

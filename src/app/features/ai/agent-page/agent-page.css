@@ -53,7 +53,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  flex: 1;
 }
 
 .agent-empty {
@@ -127,6 +126,31 @@
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* Plain "Simulated response (stub) —" header, deliberately bar-free. */
+.agent-response-prefix {
+  margin: 0 0 var(--space-2);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Quoted part: blue vertical accent bar to emphasize the response,
+   wrapping the action line and the echoed prompt. */
+.agent-response-quote {
+  border-left: 3px solid var(--accent, var(--border));
+  padding-left: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.agent-response-action {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
 }
 
 /* Thinking indicator, "à la Mistral Vibe", shown while the stub
