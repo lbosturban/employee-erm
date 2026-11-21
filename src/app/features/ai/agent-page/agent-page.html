@@ -1,7 +1,9 @@
 <section class="agent-page" aria-labelledby="agent-title">
-  <!-- Placeholder notice: the only treaty of the page until the real
-       agent lands — the prompt just echoes instructions. -->
+  <!-- Placeholder status: the only behaviour of the page until the real
+       sovereign agent lands — the prompt just echoes instructions, with
+       an invitation to use the Mistral Vibe agent in the meantime. -->
   <h1 id="agent-title" class="agent-notice">{{ 'ai.notice' | t }}</h1>
+  <p class="agent-notice-invite">{{ 'ai.noticeInvite' | t }}</p>
 
   <div class="agent-column">
     <h2 class="agent-transcript-title">{{ 'ai.transcript' | t }}</h2>
@@ -12,13 +14,26 @@
       } @else {
         @for (entry of entries(); track entry.id) {
           <article class="agent-entry" [class.expanded]="entry.expanded">
-            <p
-              class="agent-entry-text"
-              [class.folded]="!entry.expanded"
-              [class.multiline]="entry.text.includes('\n')"
-            >
-              {{ entry.text }}
-            </p>
+            <div class="agent-entry-body">
+              <p
+                class="agent-entry-text"
+                [class.folded]="!entry.expanded"
+                [class.multiline]="entry.text.includes('\n')"
+              >
+                {{ entry.text }}
+              </p>
+
+              @if (entry.thinking) {
+                <!-- Simulated agent round-trip: thinking indicator first,
+                     "à la Mistral Vibe", then the stub response lands. -->
+                <p class="agent-thinking" aria-live="polite">
+                  <span class="agent-thinking-dot" aria-hidden="true"></span>
+                  {{ 'ai.thinking' | t }}
+                </p>
+              } @else {
+                <p class="agent-response">{{ entry.response }}</p>
+              }
+            </div>
             <button
               type="button"
               class="agent-toggle"
@@ -36,8 +51,8 @@
 
     <!-- Always-ready prompt at the bottom of the column, chat style. -->
     <div class="agent-prompt">
-      <label class="visually-hidden-label" for="agent-prompt-input">
-        {{ 'ai.promptLabel' | t }}
+      <label class="agent-prompt-label" for="agent-prompt-input">
+        {{ 'ai.currentPrompt' | t }}
       </label>
       <textarea
         id="agent-prompt-input"
@@ -47,6 +62,7 @@
         (input)="onDraftInput($event)"
         (keydown)="onPromptKeydown($event, agentTextarea)"
         [placeholder]="'ai.promptPlaceholder' | t"
+        [attr.aria-label]="'ai.promptLabel' | t"
         #agentTextarea
       ></textarea>
       <button

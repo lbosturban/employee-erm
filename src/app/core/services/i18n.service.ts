@@ -137,13 +137,19 @@ const EN: Dictionary = {
   'ai.start': 'Start with AI Agent',
   'ai.notice':
     'The AI Agent functionality is not available yet. The prompt will only echo instructions as stated.',
+  'ai.noticeInvite':
+    'In the meantime, we invite you to drive this workspace with the Mistral Vibe agent — sovereign AI, integrated directly into the application.',
   'ai.promptLabel': 'Instruction for the AI Agent',
+  'ai.currentPrompt': 'Current Prompt',
   'ai.promptPlaceholder': 'Type an instruction… (Enter to send, Shift+Enter for a new line)',
   'ai.send': 'Send instruction',
   'ai.unfold': 'Unfold instruction',
   'ai.refold': 'Fold instruction',
   'ai.empty': 'No instruction sent yet.',
   'ai.transcript': 'Instruction transcript',
+  'ai.thinking': 'Thinking…',
+  'ai.stubResponsePrefix':
+    'Simulated response (stub) — once the sovereign in-app AI is integrated, the agent would process this instruction:',
   'search.placeholder': 'Search a contact…',
   'search.noResults': 'No contact found.',
   'data.export': 'Export the full database as JSON',
@@ -478,13 +484,19 @@ const FR: Dictionary = {
   'ai.start': 'Démarrer avec l’Agent IA',
   'ai.notice':
     'La fonctionnalité Agent IA n’est pas encore disponible. L’invite se contente de répéter les instructions telles quelles.',
+  'ai.noticeInvite':
+    'En attendant, nous vous invitons à piloter cet espace avec l’agent Mistral Vibe — une IA souveraine, intégrée directement dans l’application.',
   'ai.promptLabel': 'Instruction pour l’Agent IA',
+  'ai.currentPrompt': 'Invite actuelle',
   'ai.promptPlaceholder': 'Saisissez une instruction… (Entrée pour envoyer, Maj+Entrée pour un retour à la ligne)',
   'ai.send': 'Envoyer l’instruction',
   'ai.unfold': 'Déplier l’instruction',
   'ai.refold': 'Replier l’instruction',
   'ai.empty': 'Aucune instruction envoyée pour le moment.',
   'ai.transcript': 'Historique des instructions',
+  'ai.thinking': 'Réflexion…',
+  'ai.stubResponsePrefix':
+    'Réponse simulée (bouchon) — une fois l’IA souveraine intégrée, l’agent traiterait cette instruction :',
   'search.placeholder': 'Rechercher un contact…',
   'search.noResults': 'Aucun contact trouvé.',
   'data.export': 'Exporter la base complète en JSON',

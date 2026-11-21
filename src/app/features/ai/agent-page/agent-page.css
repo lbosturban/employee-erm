@@ -20,6 +20,15 @@
   max-width: 60%;
 }
 
+/* Soft invitation line under the notice banner. */
+.agent-notice-invite {
+  margin: calc(var(--space-3) * -0.5) 0 0;
+  max-width: 60%;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
 /* The chat area occupies the right half of the page, keeping the
    central-to-right aesthetics requested for this section. */
 .agent-column {
@@ -53,7 +62,7 @@
   font-size: 0.9rem;
 }
 
-/* One echoed instruction: chat bubble, left-justified. */
+/* One instruction and its simulated exchange: chat bubble, left-justified. */
 .agent-entry {
   display: flex;
   align-items: flex-start;
@@ -67,6 +76,14 @@
 
 .agent-entry.expanded {
   border-color: var(--accent, var(--border));
+}
+
+.agent-entry-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
 }
 
 .agent-entry-text {
@@ -92,6 +109,62 @@
   white-space: pre;
 }
 
+/* Simulated agent indicators, "à la Mistral Vibe". */
+.agent-thinking {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--text-muted);
+  animation: agent-thinking-fade 0.3s ease-in;
+}
+
+/* Pulsing dot while the stub round-trip is pending. */
+.agent-thinking-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent, var(--text-muted));
+  animation: agent-thinking-pulse 1s ease-in-out infinite;
+}
+
+@keyframes agent-thinking-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.85);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes agent-thinking-fade {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Simulated stub response, visually distinct from the echoed prompt. */
+.agent-response {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+  border-left: 3px solid var(--accent, var(--border));
+  padding-left: var(--space-2);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* Unfold/refold toggle, docked on the right INSIDE the entry. */
 .agent-toggle {
   flex: none;
@@ -114,32 +187,53 @@
   border-color: var(--accent, var(--border));
 }
 
-/* The always-ready prompt pinned to the bottom of the column. */
+/* The always-ready prompt pinned to the bottom of the column.
+   Smoother panel: rounded surface, subtle shadow, accent ring on focus. */
 .agent-prompt {
   display: flex;
   align-items: flex-end;
   gap: var(--space-2);
   position: sticky;
   bottom: 0;
-  background: var(--background, var(--surface));
+  flex-direction: column;
+  background: var(--bg, var(--surface));
   padding-top: var(--space-2);
 }
 
+/* Visible "Current Prompt" label above the textarea. */
+.agent-prompt-label {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* Textarea itself uses shared vars via the class below. */
 .agent-prompt-input {
   flex: 1;
+  width: 100%;
   resize: vertical;
   min-height: 2.6rem;
   font: inherit;
   color: var(--text);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: var(--space-2) var(--space-3);
+  border-radius: calc(var(--radius) + 2px);
+  padding: var(--space-3) var(--space-3);
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.agent-prompt-input:hover {
+  border-color: var(--accent, var(--border));
 }
 
 .agent-prompt-input:focus-visible {
-  outline: 2px solid var(--accent, var(--border));
-  outline-offset: 1px;
+  outline: none;
+  border-color: var(--accent, var(--border));
+  box-shadow: 0 0 0 3px var(--accent-soft, transparent), var(--shadow);
 }
 
 .agent-send {
@@ -147,18 +241,13 @@
   white-space: nowrap;
 }
 
-.visually-hidden-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-}
-
 /* Narrow screens: let the chat take the full width back. */
 @media (max-width: 920px) {
   .agent-notice {
+    max-width: none;
+  }
+
+  .agent-notice-invite {
     max-width: none;
   }
 

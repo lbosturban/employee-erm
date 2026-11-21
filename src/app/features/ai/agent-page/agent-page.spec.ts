@@ -39,6 +39,18 @@ describe('AgentPage', () => {
     expect(notice.textContent).toContain('echo');
   });
 
+  it('renders a "Current Prompt" label above the prompt textarea', () => {
+    const label = fixture.nativeElement.querySelector('.agent-prompt-label') as HTMLElement;
+    expect(label.textContent).toContain('Current Prompt');
+    expect(label.getAttribute('for')).toBe('agent-prompt-input');
+  });
+
+  it('invites users to drive the workspace with the Mistral Vibe agent', () => {
+    const invite = fixture.nativeElement.querySelector('.agent-notice-invite') as HTMLElement;
+    expect(invite).not.toBeNull();
+    expect(invite.textContent).toContain('Mistral Vibe');
+  });
+
   it('starts with an empty transcript message and an empty prompt', () => {
     expect(fixture.nativeElement.querySelector('.agent-empty')).not.toBeNull();
     expect(page['entries']()).toHaveLength(0);
@@ -105,5 +117,29 @@ describe('AgentPage', () => {
     await await_fixture();
     expect(page['entries']()).toHaveLength(1);
     expect(page['draft']()).toBe('');
+  });
+
+  it('simulates a thinking phase then a stub response quoting the instruction', async () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      await type('run the ERM diagnostic', false);
+
+      // While the (stub) round-trip is pending, a thinking indicator shows.
+      const thinking = fixture.nativeElement.querySelector('.agent-thinking') as HTMLElement;
+      expect(thinking).not.toBeNull();
+      expect(thinking.textContent).toContain('Thinking');
+      expect(fixture.nativeElement.querySelector('.agent-response')).toBeNull();
+
+      // After the simulated delay the response lands, quoting the instruction.
+      vi.advanceTimersByTime(900);
+      fixture.detectChanges();
+      const response = fixture.nativeElement.querySelector('.agent-response') as HTMLElement;
+      expect(response).not.toBeNull();
+      expect(response.textContent).toContain('Simulated response (stub)');
+      expect(response.textContent).toContain('run the ERM diagnostic');
+      expect(fixture.nativeElement.querySelector('.agent-thinking')).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
