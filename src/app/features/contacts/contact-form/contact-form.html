@@ -12,35 +12,90 @@
   }
 
   <form class="card form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
-    <div class="form-row">
-      <label class="form-field">
-        <span>{{ 'form.firstName' | t }} <em aria-hidden="true">*</em></span>
-        <input
-          type="text"
-          class="field"
-          formControlName="firstName"
-          appAutofocus
-          [attr.aria-invalid]="hasError('firstName')"
-          [attr.aria-describedby]="hasError('firstName') ? 'firstName-error' : null"
-        />
-        @if (hasError('firstName'); as message) {
-          <span class="form-error" id="firstName-error" role="alert">{{ message }}</span>
-        }
-      </label>
+    <!-- ── Name: hybrid full / structured entry ─────────────────────────── -->
+    <div formGroupName="name" class="name-group">
+      <div class="form-row">
+        <label class="form-field">
+          <span>{{ 'form.nameMode' | t }}</span>
+          <select
+            class="field"
+            formControlName="mode"
+            (change)="onNameModeChange($event)"
+          >
+            <option value="full">{{ 'form.nameModeFull' | t }}</option>
+            <option value="structured">{{ 'form.nameModeStructured' | t }}</option>
+          </select>
+        </label>
 
-      <label class="form-field">
-        <span>{{ 'form.lastName' | t }} <em aria-hidden="true">*</em></span>
-        <input
-          type="text"
-          class="field"
-          formControlName="lastName"
-          [attr.aria-invalid]="hasError('lastName')"
-          [attr.aria-describedby]="hasError('lastName') ? 'lastName-error' : null"
-        />
-        @if (hasError('lastName'); as message) {
-          <span class="form-error" id="lastName-error" role="alert">{{ message }}</span>
+        @if (nameMode() === 'full') {
+          <label class="form-field">
+            <span>{{ 'form.rawFullName' | t }} <em aria-hidden="true">*</em></span>
+            <input
+              type="text"
+              class="field"
+              formControlName="rawFullName"
+              appAutofocus
+              [attr.aria-invalid]="nameHasError()"
+            />
+          </label>
         }
-      </label>
+      </div>
+
+      @if (nameMode() === 'structured') {
+        <div class="form-row">
+          <label class="form-field">
+            <span>{{ 'form.shortTitle' | t }}</span>
+            <input type="text" class="field" formControlName="shortTitle" placeholder="Dr. / Me." />
+          </label>
+
+          <label class="form-field">
+            <span>{{ 'form.longTitle' | t }}</span>
+            <input
+              type="text"
+              class="field"
+              formControlName="longTitle"
+              placeholder="Doctor / Maître"
+            />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="form-field">
+            <span>{{ 'form.firstName' | t }} <em aria-hidden="true">*</em></span>
+            <input type="text" class="field" formControlName="firstName" appAutofocus />
+          </label>
+
+          <label class="form-field">
+            <span>{{ 'form.middleNames' | t }}</span>
+            <input
+              type="text"
+              class="field"
+              formControlName="middleNames"
+              placeholder="Marie, Élodie"
+            />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label class="form-field">
+            <span>{{ 'form.lastName' | t }} <em aria-hidden="true">*</em></span>
+            <input type="text" class="field" formControlName="lastName" />
+          </label>
+
+          <label class="form-field">
+            <span>{{ 'form.culturalOrder' | t }}</span>
+            <select class="field" formControlName="culturalOrder">
+              @for (order of culturalOrders; track order) {
+                <option [value]="order">{{ 'form.culturalOrder.' + order | t }}</option>
+              }
+            </select>
+          </label>
+        </div>
+      }
+
+      @if (nameHasError()) {
+        <p class="form-error" role="alert">{{ 'form.invalidName' | t }}</p>
+      }
     </div>
 
     <div class="form-row">
@@ -75,34 +130,75 @@
 
     <div class="form-row">
       <label class="form-field">
-        <span>{{ 'form.company' | t }}</span>
-        <input type="text" class="field" formControlName="company" />
+        <span>{{ 'form.jobTitle' | t }}</span>
+        <input type="text" class="field" formControlName="jobTitle" />
       </label>
 
       <label class="form-field">
-        <span>{{ 'form.jobTitle' | t }}</span>
-        <input type="text" class="field" formControlName="jobTitle" />
+        <span>{{ 'form.city' | t }}</span>
+        <input type="text" class="field" formControlName="city" />
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.companyId' | t }}</span>
+        <select class="field" formControlName="companyId">
+          <option value="">{{ 'form.noCompany' | t }}</option>
+          @for (company of companyService.companies(); track company.id) {
+            <option [value]="company.id">{{ company.name }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="form-field">
+        <span>{{ 'form.category' | t }}</span>
+        <select class="field" formControlName="categoryId">
+          <option value="">{{ 'contacts.uncategorized' | t }}</option>
+          @for (category of categoryService.categories(); track category.id) {
+            <option [value]="category.id">{{ category | catName }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.hrProcessStatus' | t }}</span>
+        <select class="field" formControlName="hrProcessStatus">
+          @for (status of hrStatuses; track status) {
+            <option [value]="status">{{ 'hr.status.' + status | t }}</option>
+          }
+        </select>
+      </label>
+
+      <div class="form-field checkbox-field">
+        <label class="checkbox">
+          <input type="checkbox" formControlName="isCompanyActive" />
+          <span>{{ 'form.companyActive' | t }}</span>
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" formControlName="favorite" />
+          <span>{{ 'form.favorite' | t }}</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <label class="form-field">
+        <span>{{ 'form.profileImage' | t }}</span>
+        <input type="url" class="field" formControlName="profileImageUrl" placeholder="https://…" />
+      </label>
+
+      <label class="form-field">
+        <span>{{ 'form.profileImageAlt' | t }}</span>
+        <input type="text" class="field" formControlName="profileImageAlt" />
       </label>
     </div>
 
     <label class="form-field">
-      <span>{{ 'form.category' | t }}</span>
-      <select class="field" formControlName="categoryId">
-        <option value="">{{ 'contacts.uncategorized' | t }}</option>
-        @for (category of categoryService.categories(); track category.id) {
-          <option [value]="category.id">{{ category | catName }}</option>
-        }
-      </select>
-    </label>
-
-    <label class="form-field">
       <span>{{ 'form.notes' | t }}</span>
       <textarea class="field" rows="4" formControlName="notes"></textarea>
-    </label>
-
-    <label class="checkbox">
-      <input type="checkbox" formControlName="favorite" />
-      <span>{{ 'form.favorite' | t }}</span>
     </label>
 
     <div class="form-actions">

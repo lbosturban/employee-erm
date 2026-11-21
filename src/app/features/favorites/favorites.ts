@@ -5,6 +5,7 @@ import { DebounceInputDirective } from '../../core/directives/debounce-input.dir
 import { ContactCard } from '../../shared/contact-card/contact-card';
 import { ConfirmDialog } from '../../shared/confirm-dialog/confirm-dialog';
 import { Contact } from '../../core/models/contact.model';
+import { composeFullName } from '../../core/models/contact-name.model';
 
 /** Favorites view: adds a small search on top of the favorite contact set. */
 @Component({
@@ -25,12 +26,12 @@ export class FavoritesPage {
       .contacts()
       .filter((contact) => contact.favorite)
       .filter((contact) =>
-        term ? `${contact.firstName} ${contact.lastName}`.toLowerCase().includes(term) : true,
+        term ? this.contactService.matchesSearch(contact, term) : true,
       )
       .sort((a, b) =>
-        `${a.lastName} ${a.firstName}`
+        composeFullName(a.name)
           .toLowerCase()
-          .localeCompare(`${b.lastName} ${b.firstName}`.toLowerCase()),
+          .localeCompare(composeFullName(b.name).toLowerCase()),
       );
   });
 

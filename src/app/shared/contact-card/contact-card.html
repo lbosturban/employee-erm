@@ -1,14 +1,19 @@
 <article class="contact-card" role="listitem">
   <div class="card-head">
-    <span class="avatar" aria-hidden="true">{{
-      contact().firstName | initials: contact().lastName
-    }}</span>
+    @if (contact().profileImageUrl) {
+      <img
+        class="avatar"
+        [src]="contact().profileImageUrl"
+        [alt]="contact().profileImageAlt || (contact().name | fullName)"
+        [title]="contact().profileImageAlt || (contact().name | fullName)"
+      />
+    } @else {
+      <span class="avatar" aria-hidden="true">{{ contact().name | initials }}</span>
+    }
     <h3 class="card-name">
       <!-- innerHTML binding is required for SafeHtml (search-term highlighting). -->
       <a [routerLink]="['/contacts', contact().id]">
-        <span
-          [innerHTML]="contact().firstName | fullName: contact().lastName | highlight: searchTerm()"
-        ></span>
+        <span [innerHTML]="contact().name | fullName | highlight: searchTerm()"></span>
       </a>
     </h3>
     <button
@@ -24,8 +29,8 @@
   </div>
 
   <p class="card-role">
-    @if (contact().jobTitle || contact().company) {
-      {{ contact().jobTitle | jobLine: contact().company }}
+    @if (contact().jobTitle || company()) {
+      {{ contact().jobTitle | jobLine: company()?.name }}
     }
   </p>
 
@@ -39,6 +44,10 @@
   } @else {
     <span class="badge badge-muted">{{ 'contacts.uncategorized' | t }}</span>
   }
+  <span class="badge" [class.badge-muted]="!contact().isCompanyActive">{{
+    companyActiveLabel()
+  }}</span>
+  <span class="badge badge-muted card-hr-badge">{{ hrStatusLabel() }}</span>
 
   <div class="card-actions">
     <a class="btn btn-ghost" [routerLink]="['/contacts', contact().id]">{{

@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input, output } f
 import { RouterLink } from '@angular/router';
 import { Contact } from '../../core/models/contact.model';
 import { CategoryService } from '../../core/services/category.service';
+import { CompanyService } from '../../core/services/company.service';
 import { I18nService } from '../../core/services/i18n.service';
 import { VCardService } from '../../core/services/vcard.service';
 import { FullNamePipe } from '../../core/pipes/full-name.pipe';
@@ -27,6 +28,7 @@ import { CatNamePipe } from '../../core/pipes/category-name.pipe';
 })
 export class ContactCard {
   private readonly categoryService = inject(CategoryService);
+  private readonly companyService = inject(CompanyService);
   private readonly vcardService = inject(VCardService);
   private readonly i18n = inject(I18nService);
 
@@ -39,10 +41,26 @@ export class ContactCard {
     this.categoryService.categories().find((entry) => entry.id === this.contact().categoryId),
   );
 
+  /** Company row behind contact.companyId, resolved through CompanyService. */
+  readonly company = computed(() => {
+    const companyId = this.contact().companyId;
+    return companyId ? this.companyService.getById(companyId) : null;
+  });
+
   readonly starLabel = computed(() =>
     this.i18n.translate(
       this.contact().favorite ? 'contacts.removeFavorite' : 'contacts.addFavorite',
     ),
+  );
+
+  readonly companyActiveLabel = computed(() =>
+    this.i18n.translate(
+      this.contact().isCompanyActive ? 'contacts.companyActive' : 'contacts.companyInactive',
+    ),
+  );
+
+  readonly hrStatusLabel = computed(() =>
+    this.i18n.translate(`hr.status.${this.contact().hrProcessStatus}`),
   );
 
   /** One-click vCard 4.0 export of this contact. */

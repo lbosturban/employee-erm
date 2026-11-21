@@ -94,3 +94,24 @@
   border-top: 1px solid var(--border);
   padding-top: var(--space-4);
 }
+
+/* Profile image reuses the round avatar chip sizing. */
+.detail-head img.avatar {
+  object-fit: cover;
+}
+
+/* CEO and HR-lifecycle badge accents next to the category badge. */
+.badge-ceo {
+  background: var(--accent);
+  color: #fff;
+}
+
+.badge-hr {
+  background: var(--text-muted);
+  color: #fff;
+}
+
+.detail-grid-tokens {
+  margin: 0;
+}
+

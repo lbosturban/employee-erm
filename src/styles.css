@@ -221,6 +221,12 @@ mark {
   font-size: 0.7rem;
 }
 
+/* Profile-image avatars crop into the round chip instead of stretching. */
+img.avatar {
+  object-fit: cover;
+}
+
+
 .card-role {
   margin: 0;
   color: var(--text-muted);

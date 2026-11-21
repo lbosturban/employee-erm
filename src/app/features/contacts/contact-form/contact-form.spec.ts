@@ -1,20 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, provideRouter } from '@angular/router';
+import { FormGroup } from '@angular/forms';
 import { ContactFormPage } from './contact-form';
 import { ContactService } from '../../../core/services/contact.service';
+import { MigrationService } from '../../../core/services/migration.service';
 import { Contact } from '../../../core/models/contact.model';
 
-/** Structural view of the protected form shape, for test assertions. */
-interface FormLike {
-  valid: boolean;
-  controls: Record<string, { errors: Record<string, unknown> | null }>;
-  patchValue(value: Record<string, unknown>): void;
-  getRawValue(): Record<string, unknown>;
-  markAsDirty(): void;
+/** The protected `form` control, re-typed for structural assertions. */
+function formOf(component: ContactFormPage): FormGroup {
+  return component['form' as keyof ContactFormPage] as unknown as FormGroup;
 }
 
-function formOf(component: ContactFormPage): FormLike {
-  return component['form' as keyof ContactFormPage] as unknown as FormLike;
+/** Short accessor for the nested name group. */
+function nameGroup(form: FormGroup): FormGroup {
+  return form.controls['name'] as FormGroup;
 }
 
 describe('ContactFormPage', () => {
@@ -23,6 +22,8 @@ describe('ContactFormPage', () => {
   beforeEach(() => {
     window.localStorage.clear();
     TestBed.configureTestingModule({});
+    // Domain services no longer seed themselves: the schema layer does.
+    TestBed.inject(MigrationService).run();
     contactService = TestBed.inject(ContactService);
   });
 
@@ -36,66 +37,88 @@ describe('ContactFormPage', () => {
     });
     // The test router has no routes: stub navigation so onSubmit stays sync.
     vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
-    return TestBed.createComponent(ContactFormPage).componentInstance;
+    // resetTestingModule dropped the seeded schema: re-run the migration.
+    TestBed.inject(MigrationService).run();
+    const component = TestBed.createComponent(ContactFormPage).componentInstance;
+    contactService = TestBed.inject(ContactService);
+    return component;
   }
 
   function instantiateNew(): ContactFormPage {
-    const component = instantiateWith({});
-    // TestBed was reset: refresh the reference so assertions target the
-    // same service instance the component uses.
-    contactService = TestBed.inject(ContactService);
-    return component;
+    return instantiateWith({});
   }
 
   function instantiateEdit(seed: Contact): ContactFormPage {
-    const { id, createdAt, updatedAt, ...draft } = seed;
+    // Edit mode is driven by the resolver-bound Contact (no id/timestamps).
+    const { id, addedAt, updatedAt, ...contact } = seed;
     void id;
-    void createdAt;
+    void addedAt;
     void updatedAt;
-    const component = instantiateWith({ contact: draft });
-    contactService = TestBed.inject(ContactService);
-    return component;
+    return instantiateWith({ contact });
   }
 
   it('starts valid when prefilled from the resolver data in edit mode', () => {
     const component = instantiateEdit(contactService.contacts()[0]);
-    expect(formOf(component).valid).toBe(true);
-    expect(formOf(component).getRawValue()['firstName']).toBe(
-      contactService.contacts()[0].firstName,
+    const form = formOf(component);
+    expect(form.valid).toBe(true);
+    expect((form.controls['name'] as FormGroup).getRawValue()['firstName']).toBe(
+      contactService.contacts()[0].name.firstName,
     );
   });
 
-  it('is pristine and requires input in create mode', () => {
+  it('is pristine and requires input in create mode (full name and email/phone)', () => {
     const component = instantiateNew();
-    expect(formOf(component).valid).toBe(false);
-    expect(formOf(component).controls['firstName'].errors).toEqual({ required: true });
+    const form = formOf(component);
+    expect(form.valid).toBe(false);
+    expect(form.controls['email'].errors).toEqual({ required: true });
+    // The name group carries the contactNameValidator error.
+    expect(nameGroup(form).errors).toEqual({ contactName: { cause: 'rawFullName' } });
   });
 
   it('rejects an invalid email and an invalid phone', () => {
     const component = instantiateNew();
-    formOf(component).patchValue({ email: 'not-an-email', phone: '12 ab' });
-    expect(formOf(component).controls['email'].errors).toEqual({ email: true });
-    expect(formOf(component).controls['phone'].errors).toEqual({ phone: true });
+    const form = formOf(component);
+    form.patchValue({ email: 'not-an-email', phone: '12 ab' });
+    expect(form.controls['email'].errors).toEqual({ email: true });
+    expect(form.controls['phone'].errors).toEqual({ phone: true });
+  });
+
+  it('requires a name token in structured mode', () => {
+    const component = instantiateNew();
+    const form = formOf(component);
+    form.patchValue({
+      name: { mode: 'structured', rawFullName: '', firstName: '', lastName: '' },
+    });
+    expect(nameGroup(form).errors).toEqual({ contactName: { cause: 'tokens' } });
+    form.patchValue({ name: { firstName: 'Ada' } });
+    expect(nameGroup(form).errors).toBeNull();
   });
 
   it('allows deactivation when pristine, blocks it when dirty', () => {
     const component = instantiateNew();
     expect(component.canDeactivate()).toBe(true);
     // patchValue alone never marks a form dirty: mark it as a user edit would.
-    formOf(component).patchValue({ firstName: 'Changed' });
+    formOf(component).patchValue({ name: { rawFullName: 'Changed Name' } });
     formOf(component).markAsDirty();
     expect(component.canDeactivate()).toBe(false);
   });
 
-  it('maps an empty categoryId to null and creates the contact on submit', () => {
+  it('maps empty category and company ids to null and creates the contact on submit', () => {
     const component = instantiateNew();
     const before = contactService.total();
-    formOf(component).patchValue({
-      firstName: 'Nouveau',
-      lastName: 'Contact',
+    const form = formOf(component);
+    form.patchValue({
+      name: {
+        mode: 'full',
+        rawFullName: 'Nouveau Contact',
+        firstName: '',
+        middleNames: '',
+        lastName: '',
+      },
       email: 'nouveau.contact@example.com',
       phone: '+33 6 00 00 00 00',
       categoryId: '',
+      companyId: '',
     });
     component.onSubmit();
     expect(contactService.total()).toBe(before + 1);
@@ -103,5 +126,30 @@ describe('ContactFormPage', () => {
       .contacts()
       .find((contact) => contact.email === 'nouveau.contact@example.com');
     expect(created?.categoryId).toBeNull();
+    expect(created?.companyId).toBeNull();
+    expect(created?.name.mode).toBe('full');
+    expect(created?.name.rawFullName).toBe('Nouveau Contact');
+  });
+
+  it('normalizes middle names into tokens when submitting a structured name', () => {
+    const component = instantiateNew();
+    const form = formOf(component);
+    form.patchValue({
+      name: {
+        mode: 'structured',
+        rawFullName: '',
+        firstName: 'Ada',
+        middleNames: 'Byron, King',
+        lastName: 'Countess',
+      },
+      email: 'ada.lovelace@example.com',
+      phone: '+33 6 11 22 33 44',
+    });
+    component.onSubmit();
+    const created = contactService
+      .contacts()
+      .find((contact) => contact.email === 'ada.lovelace@example.com');
+    expect(created?.name.middleNames).toEqual(['Byron', 'King']);
+    expect(created?.hrProcessStatus).toBe('Pending');
   });
 });

@@ -1,4 +1,8 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import {
+  APP_INITIALIZER,
+  ApplicationConfig,
+  provideBrowserGlobalErrorListeners,
+} from '@angular/core';
 import {
   provideRouter,
   withComponentInputBinding,
@@ -6,10 +10,19 @@ import {
   withRouterConfig,
 } from '@angular/router';
 import { routes } from './app.routes';
+import { MigrationService } from './core/services/migration.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
+    // Run the localStorage schema check before the first domain service
+    // reads storage: migrations and reseeding must happen first.
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (migration: MigrationService) => () => migration.run(),
+      multi: true,
+      deps: [MigrationService],
+    },
     provideRouter(
       routes,
       // Binds route params and resolved data to component inputs.

@@ -32,10 +32,10 @@
           @for (contact of contactService.latest(); track contact.id) {
             <li>
               <span class="avatar avatar-sm" aria-hidden="true">
-                {{ contact.firstName | initials: contact.lastName }}
+                {{ contact.name | initials }}
               </span>
               <a [routerLink]="['/contacts', contact.id]" class="latest-link">
-                {{ contact.firstName | fullName: contact.lastName }}
+                {{ contact.name | fullName }}
               </a>
               @if (contact.favorite) {
                 <span class="star-inline" aria-hidden="true">★</span>
@@ -78,6 +78,82 @@
         </ul>
       }
       <p class="muted">{{ 'dashboard.uncategorized' | t }} : {{ uncategorizedCount() }}</p>
+    </div>
+
+    <div class="card panel">
+      <h2>{{ 'dashboard.companyBreakdown' | t }}</h2>
+      <ul class="cat-stats">
+        <li>
+          <div class="cat-stat-head">
+            <span class="dot dot-active" aria-hidden="true"></span>
+            <span>{{ 'contacts.companyActive' | t }}</span>
+            <span class="cat-count">{{ contactService.companyActiveCount() }}</span>
+          </div>
+          <div
+            class="bar-track"
+            role="img"
+            [attr.aria-label]="'contacts.companyActive' | t"
+          >
+            <div
+              class="bar bar-active"
+              [style.width.%]="
+                contactService.total() === 0
+                  ? 0
+                  : (contactService.companyActiveCount() / contactService.total()) * 100
+              "
+            ></div>
+          </div>
+        </li>
+        <li>
+          <div class="cat-stat-head">
+            <span class="dot dot-inactive" aria-hidden="true"></span>
+            <span>{{ 'contacts.companyInactive' | t }}</span>
+            <span class="cat-count">{{ contactService.companyInactiveCount() }}</span>
+          </div>
+          <div
+            class="bar-track"
+            role="img"
+            [attr.aria-label]="'contacts.companyInactive' | t"
+          >
+            <div
+              class="bar bar-inactive"
+              [style.width.%]="
+                contactService.total() === 0
+                  ? 0
+                  : (contactService.companyInactiveCount() / contactService.total()) * 100
+              "
+            ></div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card panel">
+      <h2>{{ 'dashboard.hrBreakdown' | t }}</h2>
+      <ul class="cat-stats">
+        @for (status of hrStatuses; track status) {
+          <li>
+            <div class="cat-stat-head">
+              <span>{{ 'hr.status.' + status | t }}</span>
+              <span class="cat-count">
+                {{ contactService.hrStatusCounts()[status] }} {{ 'contacts.count' | t }}
+              </span>
+            </div>
+            <div
+              class="bar-track"
+              role="img"
+              [attr.aria-label]="('hr.status.' + status | t) + ': ' + contactService.hrStatusCounts()[status]"
+            >
+              <div
+                class="bar"
+                [style.width.%]="
+                  (contactService.hrStatusCounts()[status] / maxHrStatusCount()) * 100
+                "
+              ></div>
+            </div>
+          </li>
+        }
+      </ul>
     </div>
   </div>
 </section>

@@ -1,20 +1,24 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { composeFullName, ContactName } from '../models/contact-name.model';
 
-/** Renders a contact as "FirstName LASTNAME" for displays like cards. */
+/**
+ * Formats a {@link ContactName} into an accurate display name: the raw
+ * full name when the entry is direct ('full' mode), or the composed
+ * token sequence honoring the cultural order (family-first for eastern
+ * order, honorific titles included). Accepts a plain string too, which
+ * passes through unchanged. Renders an em dash for empty names.
+ */
 @Pipe({ name: 'fullName' })
 export class FullNamePipe implements PipeTransform {
-  transform(firstName: string | null | undefined, lastName: string | null | undefined): string {
-    const first = (firstName ?? '').trim();
-    const last = (lastName ?? '').trim();
-    if (!first && !last) {
+  transform(name: ContactName | string | null | undefined): string {
+    if (name === null || name === undefined) {
       return '—';
     }
-    if (!first) {
-      return last.toUpperCase();
+    if (typeof name === 'string') {
+      const trimmed = name.trim();
+      return trimmed === '' ? '—' : trimmed;
     }
-    if (!last) {
-      return first;
-    }
-    return `${first} ${last.toUpperCase()}`;
+    const composed = composeFullName(name).trim();
+    return composed === '' ? '—' : composed;
   }
 }

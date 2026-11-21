@@ -1,8 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { Contact } from '../models/contact.model';
+import { Contact, ContactDraft } from '../models/contact.model';
 import { Category } from '../models/category.model';
+import { composeFullName, ContactName } from '../models/contact-name.model';
 import { I18nService } from './i18n.service';
-import { ContactDraft } from './contact.service';
+import { CompanyService } from './company.service';
 
 const CRLF = '\r\n';
 
@@ -20,6 +21,18 @@ export interface ParsedVCard {
   categoryName: string;
 }
 
+/** Decomposed vCard `N` property (RFC 6350 §6.2.2 components). */
+interface NameComponents {
+  /** Family name(s), semicolon component 0. */
+  family: string;
+  /** Given name(s), component 1. */
+  given: string;
+  /** Additional (middle) names, space-separated inside component 2. */
+  additional: string;
+  /** Honorific title prefix, component 3. */
+  prefix: string;
+}
+
 /**
  * vCard 4.0 (RFC 6350) import/export for contacts. Kept as a standalone
  * service so the format logic is testable and swappable by a backend.
@@ -27,6 +40,7 @@ export interface ParsedVCard {
 @Injectable({ providedIn: 'root' })
 export class VCardService {
   private readonly i18n = inject(I18nService);
+  private readonly companyService = inject(CompanyService);
 
   /** Builds and downloads a `.vcf` file for one contact. */
   exportContact(contact: Contact, category: Category | null): void {
@@ -35,7 +49,7 @@ export class VCardService {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `${contact.firstName}-${contact.lastName}.vcf`
+    anchor.download = `${composeFullName(contact.name)}.vcf`
       .toLowerCase()
       .replace(/[^a-z0-9.-]/g, '-');
     anchor.click();
@@ -69,15 +83,19 @@ export class VCardService {
   /** Serialization step kept public for tests and future sync layers. */
   buildVCard(contact: Contact, category: Category | null): string {
     const rev = contact.updatedAt.replace(/[-:]/g, '').replace(/\.\d+/, '');
+    const n = serializeNameComponents(contact.name);
+    const companyName = contact.companyId
+      ? (this.companyService.getById(contact.companyId)?.name ?? '')
+      : '';
     return [
       'BEGIN:VCARD',
       'VERSION:4.0',
       `UID:${contact.id}`,
-      `N:${this.escape(contact.lastName)};${this.escape(contact.firstName)};;;`,
-      `FN:${this.escape(`${contact.firstName} ${contact.lastName}`)}`,
+      `N:${this.escape(n.family)};${this.escape(n.given)};${this.escape(n.additional)};${this.escape(n.prefix)};`,
+      `FN:${this.escape(composeFullName(contact.name))}`,
       `TEL;TYPE=cell:${this.escape(contact.phone)}`,
       `EMAIL;TYPE=work:${this.escape(contact.email)}`,
-      contact.company ? `ORG:${this.escape(contact.company)}` : null,
+      companyName ? `ORG:${this.escape(companyName)}` : null,
       contact.jobTitle ? `TITLE:${this.escape(contact.jobTitle)}` : null,
       contact.notes ? `NOTE:${this.escape(contact.notes)}` : null,
       category ? `CATEGORIES:${this.escape(this.categoryName(category))}` : null,
@@ -186,17 +204,65 @@ export class VCardService {
   }
 }
 
-/** Helper used by callers to turn parsed cards into contact drafts. */
-export function toContactDraft(card: ParsedVCard, categoryId: string | null): ContactDraft {
+/**
+ * Maps a {@link ContactName} onto the RFC 6350 `N` components:
+ * family;given;additional;prefix;. Structured names keep their tokens;
+ * 'full' names are split heuristically (first word = given, last word =
+ * family, the rest additional). The abbreviated honorific is preferred
+ * as prefix, falling back to the spelled-out one.
+ */
+function serializeNameComponents(name: ContactName): NameComponents {
+  if (name.mode === 'full') {
+    const words = name.rawFullName.trim().split(/\s+/).filter((word) => word !== '');
+    const given = words.length >= 2 ? (words[0] ?? '') : words.join(' ');
+    const family = words.length >= 2 ? (words[words.length - 1] ?? '') : '';
+    const additional = words.slice(1, Math.max(1, words.length - 1)).join(' ');
+    return { family, given, additional, prefix: name.shortTitle || name.longTitle || '' };
+  }
   return {
-    firstName: card.firstName.slice(0, 50),
-    lastName: card.lastName.slice(0, 50),
+    family: name.lastName.trim(),
+    given: name.firstName.trim(),
+    additional: (name.middleNames ?? []).map((token) => token.trim()).filter((t) => t !== '').join(' '),
+    prefix: name.shortTitle || name.longTitle || '',
+  };
+}
+
+/**
+ * Helper used by callers to turn parsed cards into contact drafts.
+ * Imported names always land as `mode: 'full'` (verbatim free text);
+ * the company reference stays null unless the caller resolves an ORG
+ * match beforehand.
+ */
+export function toContactDraft(
+  card: ParsedVCard,
+  categoryId: string | null,
+  companyId: string | null = null,
+): ContactDraft {
+  const firstName = card.firstName.slice(0, 50).trim();
+  const lastName = card.lastName.slice(0, 50).trim();
+  const rawFullName = `${firstName} ${lastName}`.trim();
+  return {
+    name: {
+      mode: 'full',
+      rawFullName,
+      shortTitle: '',
+      longTitle: '',
+      firstName: '',
+      middleNames: [],
+      lastName: '',
+      culturalOrder: 'western',
+    },
+    jobTitle: card.jobTitle.slice(0, 80),
     email: card.email.slice(0, 120),
     phone: card.phone.slice(0, 40),
-    company: card.company.slice(0, 80),
-    jobTitle: card.jobTitle.slice(0, 80),
+    city: '',
+    companyId,
+    isCompanyActive: false,
+    hrProcessStatus: 'Pending',
     categoryId,
     favorite: card.favorite,
     notes: card.notes.slice(0, 500),
+    profileImageUrl: '',
+    profileImageAlt: rawFullName,
   };
 }

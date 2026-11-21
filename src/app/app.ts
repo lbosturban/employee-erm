@@ -6,6 +6,7 @@ import { TranslatePipe } from './core/pipes/translate.pipe';
 import { ContactService } from './core/services/contact.service';
 import { CategoryService } from './core/services/category.service';
 import { VCardService, toContactDraft, ParsedVCard } from './core/services/vcard.service';
+import { CompanyService } from './core/services/company.service';
 
 /** Application shell: header with navigation, router outlet and footer. */
 @Component({
@@ -20,6 +21,7 @@ export class App {
   protected readonly i18n = inject(I18nService);
   private readonly contactService = inject(ContactService);
   private readonly categoryService = inject(CategoryService);
+  private readonly companyService = inject(CompanyService);
   private readonly vcardService = inject(VCardService);
 
   /** Transient toast message for vCard import feedback. */
@@ -46,7 +48,9 @@ export class App {
         return;
       }
       for (const card of cards) {
-        this.contactService.create(toContactDraft(card, this.resolveCategoryId(card)));
+        this.contactService.create(
+          toContactDraft(card, this.resolveCategoryId(card), this.resolveCompanyId(card)),
+        );
       }
       this.showToast(this.i18n.translate('contacts.vcardImported'));
     } catch {
@@ -68,6 +72,22 @@ export class App {
           category.name.en.trim().toLowerCase() === wanted ||
           category.name.fr.trim().toLowerCase() === wanted,
       );
+    return match?.id ?? null;
+  }
+
+  /**
+   * Matches the card's ORG value against existing company names
+   * (case-insensitive). Unknown companies stay unassigned — they are
+   * not auto-created so imports never fabricate rows.
+   */
+  private resolveCompanyId(card: ParsedVCard): string | null {
+    const wanted = card.company.trim().toLowerCase();
+    if (!wanted) {
+      return null;
+    }
+    const match = this.companyService
+      .companies()
+      .find((company) => company.name.trim().toLowerCase() === wanted);
     return match?.id ?? null;
   }
 

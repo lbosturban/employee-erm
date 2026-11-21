@@ -4,6 +4,7 @@ import { FullNamePipe } from './full-name.pipe';
 import { InitialsPipe } from './initials.pipe';
 import { JobLinePipe } from './job-line.pipe';
 import { HighlightPipe } from './highlight.pipe';
+import { ContactName } from '../models/contact-name.model';
 
 /** Unwraps the trusted HTML payload of a bypassed SafeHtml value. */
 function html(value: SafeHtml): string {
@@ -11,29 +12,108 @@ function html(value: SafeHtml): string {
     .changingThisBreaksApplicationSecurity;
 }
 
+/** Shorthand structured-name builder. */
+function structured(parts: Partial<ContactName>): ContactName {
+  return {
+    mode: 'structured',
+    rawFullName: '',
+    firstName: '',
+    middleNames: [],
+    lastName: '',
+    culturalOrder: 'western',
+    ...parts,
+  };
+}
+
 describe('FullNamePipe', () => {
   const pipe = new FullNamePipe();
 
-  it('uppercases the last name', () => {
-    expect(pipe.transform('Amina', 'Diallo')).toBe('Amina DIALLO');
+  it('renders the raw full name verbatim in full mode', () => {
+    expect(pipe.transform({ mode: 'full', rawFullName: 'Amina Diallo' } as ContactName)).toBe(
+      'Amina Diallo',
+    );
   });
 
-  it('handles missing parts and falls back to a dash', () => {
-    expect(pipe.transform('Amina', '')).toBe('Amina');
-    expect(pipe.transform('', 'Diallo')).toBe('DIALLO');
-    expect(pipe.transform('', '')).toBe('—');
+  it('composes structured tokens in western order with the family name last', () => {
+    expect(
+      pipe.transform(
+        structured({
+          firstName: 'Julien',
+          middleNames: ['Marie'],
+          lastName: 'Moreau',
+        }),
+      ),
+    ).toBe('Julien Marie Moreau');
+  });
+
+  it('composes structured tokens in eastern order, family name first', () => {
+    expect(
+      pipe.transform(
+        structured({
+          firstName: 'Hiroshi',
+          middleNames: ['Kenji'],
+          lastName: 'Tanaka',
+          culturalOrder: 'eastern',
+          longTitle: 'Doctor',
+        }),
+      ),
+    ).toBe('Doctor Tanaka Kenji Hiroshi');
+  });
+
+  it('prefers the long title and falls back to the short title', () => {
+    expect(
+      pipe.transform(
+        structured({ firstName: 'Claire', lastName: 'Duval', shortTitle: 'Me.', longTitle: 'Maître' }),
+      ),
+    ).toBe('Maître Claire Duval');
+    expect(
+      pipe.transform(structured({ firstName: 'Claire', lastName: 'Duval', shortTitle: 'Me.' })),
+    ).toBe('Me. Claire Duval');
+  });
+
+  it('falls back to the raw full name when structured tokens are empty', () => {
+    expect(pipe.transform({ ...structured({}), mode: 'structured', rawFullName: 'Lone Name' })).toBe(
+      'Lone Name',
+    );
+  });
+
+  it('accepts and trims plain strings, rendering a dash for empty names', () => {
+    expect(pipe.transform('  Amina  ')).toBe('Amina');
+    expect(pipe.transform('   ')).toBe('—');
+    expect(pipe.transform(null)).toBe('—');
   });
 });
 
 describe('InitialsPipe', () => {
   const pipe = new InitialsPipe();
 
-  it('returns two uppercase initials', () => {
-    expect(pipe.transform('Amina', 'Diallo')).toBe('AD');
+  it('returns the first two uppercase initials from a structured name', () => {
+    expect(pipe.transform(structured({ firstName: 'Amina', lastName: 'Diallo' }))).toBe('AD');
+  });
+
+  it('returns family-name-first initials for eastern order', () => {
+    expect(
+      pipe.transform(
+        structured({ firstName: 'Hiroshi', lastName: 'Tanaka', culturalOrder: 'eastern' }),
+      ),
+    ).toBe('TH');
+  });
+
+  it('strips honorific punctuation before extracting initials', () => {
+    expect(
+      pipe.transform(
+        structured({ shortTitle: 'Me.', longTitle: '', firstName: 'Léa', lastName: 'Marchand' }),
+      ),
+    ).toBe('LM');
+  });
+
+  it('uses the first two letters for single-token names', () => {
+    expect(pipe.transform({ mode: 'full', rawFullName: 'Madonna' } as ContactName)).toBe('MA');
   });
 
   it('falls back to a question mark when nothing is available', () => {
-    expect(pipe.transform('', '')).toBe('?');
+    expect(pipe.transform(structured({}))).toBe('?');
+    expect(pipe.transform('')).toBe('?');
   });
 });
 

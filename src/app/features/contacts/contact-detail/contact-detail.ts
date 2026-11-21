@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ContactService } from '../../../core/services/contact.service';
 import { CategoryService } from '../../../core/services/category.service';
+import { CompanyService } from '../../../core/services/company.service';
 import { Contact } from '../../../core/models/contact.model';
 import { TranslatePipe } from '../../../core/pipes/translate.pipe';
 import { FullNamePipe } from '../../../core/pipes/full-name.pipe';
@@ -32,12 +33,24 @@ export class ContactDetailPage {
   private readonly router = inject(Router);
   protected readonly contactService = inject(ContactService);
   protected readonly categoryService = inject(CategoryService);
+  protected readonly companyService = inject(CompanyService);
   private readonly vcardService = inject(VCardService);
 
   /** Resolved by contactResolver and bound thanks to withComponentInputBinding. */
   readonly contact = input.required<Contact>();
 
   protected readonly deleteRequested = signal(false);
+
+  /** Company row behind contact.companyId, if any. */
+  protected readonly company = computed(() => {
+    const companyId = this.contact().companyId;
+    return companyId ? this.companyService.getById(companyId) : null;
+  });
+
+  /** True when this contact is the recorded CEO of their company. */
+  protected readonly isCeo = computed(
+    () => this.company()?.contactId === this.contact().id,
+  );
 
   toggleFavorite(): void {
     this.contactService.toggleFavorite(this.contact().id);

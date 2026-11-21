@@ -2,24 +2,34 @@
   <nav class="breadcrumb">
     <a routerLink="/contacts">{{ 'contacts.title' | t }}</a>
     <span aria-hidden="true">/</span>
-    <span>{{ contact().firstName | fullName: contact().lastName }}</span>
+    <span>{{ contact().name | fullName }}</span>
   </nav>
 
   <article class="card detail-card">
     <header class="detail-head">
-      <span class="avatar" aria-hidden="true">
-        {{ contact().firstName | initials: contact().lastName }}
-      </span>
+      @if (contact().profileImageUrl) {
+        <img
+          class="avatar"
+          [src]="contact().profileImageUrl"
+          [alt]="contact().profileImageAlt || (contact().name | fullName)"
+          [title]="contact().profileImageAlt || (contact().name | fullName)"
+        />
+      } @else {
+        <span class="avatar" aria-hidden="true">{{ contact().name | initials }}</span>
+      }
       <div class="detail-title">
-        <h1>{{ contact().firstName | fullName: contact().lastName }}</h1>
-        <p>{{ contact().jobTitle | jobLine: contact().company }}</p>
+        <h1>{{ contact().name | fullName }}</h1>
+        <p>{{ contact().jobTitle | jobLine: company()?.name }}</p>
         @if (category(); as category) {
-          <span class="badge" [style.background-color]="category.color">{{
-            category | catName
-          }}</span>
+          <span class="badge" [style.background-color]="category.color">{{ category | catName }}</span>
         } @else {
           <span class="badge badge-muted">{{ 'contacts.uncategorized' | t }}</span>
         }
+        <span
+          class="badge"
+          [class.badge-muted]="!contact().isCompanyActive"
+        >{{ (contact().isCompanyActive ? 'contacts.companyActive' : 'contacts.companyInactive') | t }}</span>
+        <span class="badge badge-hr">{{ 'hr.status.' + contact().hrProcessStatus | t }}</span>
       </div>
       <button
         type="button"
@@ -49,22 +59,68 @@
         </dd>
       </div>
       <div class="detail-row">
-        <dt>{{ 'form.company' | t }}</dt>
-        <dd>{{ contact().company || '—' }}</dd>
+        <dt>{{ 'form.companyId' | t }}</dt>
+        <dd>
+          @if (company(); as companyRow) {
+            {{ companyRow.name }}
+            @if (isCeo()) {
+              <span class="badge badge-ceo">{{ 'contacts.ceo' | t }}</span>
+            }
+          } @else {
+            —
+          }
+        </dd>
+      </div>
+      <div class="detail-row">
+        <dt>{{ 'form.city' | t }}</dt>
+        <dd>{{ contact().city || '—' }}</dd>
       </div>
       <div class="detail-row">
         <dt>{{ 'form.jobTitle' | t }}</dt>
         <dd>{{ contact().jobTitle || '—' }}</dd>
       </div>
       <div class="detail-row">
-        <dt>{{ 'contacts.createdAt' | t }}</dt>
-        <dd>{{ contact().createdAt | date: 'medium' }}</dd>
+        <dt>{{ 'contacts.addedAt' | t }}</dt>
+        <dd>{{ contact().addedAt | date: 'medium' }}</dd>
       </div>
       <div class="detail-row">
         <dt>{{ 'contacts.updatedAt' | t }}</dt>
         <dd>{{ contact().updatedAt | date: 'medium' }}</dd>
       </div>
     </dl>
+
+    <!-- Structured token breakdown, for culturally-ordered names. -->
+    @if (contact().name.mode === 'structured') {
+      <div class="detail-notes name-breakdown">
+        <h2>{{ 'detail.structuredName' | t }}</h2>
+        <dl class="detail-grid detail-grid-tokens">
+          <div class="detail-row">
+            <dt>{{ 'form.longTitle' | t }}</dt>
+            <dd>{{ contact().name.longTitle || '—' }}</dd>
+          </div>
+          <div class="detail-row">
+            <dt>{{ 'form.shortTitle' | t }}</dt>
+            <dd>{{ contact().name.shortTitle || '—' }}</dd>
+          </div>
+          <div class="detail-row">
+            <dt>{{ 'form.firstName' | t }}</dt>
+            <dd>{{ contact().name.firstName || '—' }}</dd>
+          </div>
+          <div class="detail-row">
+            <dt>{{ 'form.middleNames' | t }}</dt>
+            <dd>{{ contact().name.middleNames.join(', ') || '—' }}</dd>
+          </div>
+          <div class="detail-row">
+            <dt>{{ 'form.lastName' | t }}</dt>
+            <dd>{{ contact().name.lastName || '—' }}</dd>
+          </div>
+          <div class="detail-row">
+            <dt>{{ 'form.culturalOrder' | t }}</dt>
+            <dd>{{ 'form.culturalOrder.' + contact().name.culturalOrder | t }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
 
     @if (contact().notes) {
       <div class="detail-notes">

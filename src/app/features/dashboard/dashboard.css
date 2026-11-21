@@ -100,6 +100,24 @@
   border-radius: 50%;
 }
 
+/* Company-activity breakdown dots and bars. */
+.dot-active {
+  background: var(--accent);
+}
+
+.dot-inactive {
+  background: var(--text-muted);
+}
+
+.bar-active {
+  background: var(--accent);
+}
+
+.bar-inactive {
+  background: var(--text-muted);
+}
+
+
 .bar-track {
   height: 8px;
   border-radius: 999px;

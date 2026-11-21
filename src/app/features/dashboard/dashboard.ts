@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { RouterLink } from '@angular/router';
 import { ContactService } from '../../core/services/contact.service';
 import { CategoryService } from '../../core/services/category.service';
+import { HR_PROCESS_STATUSES } from '../../core/models/contact.model';
 import { TranslatePipe } from '../../core/pipes/translate.pipe';
 import { FullNamePipe } from '../../core/pipes/full-name.pipe';
 import { InitialsPipe } from '../../core/pipes/initials.pipe';
@@ -26,8 +27,15 @@ export class DashboardPage {
   protected readonly contactService = inject(ContactService);
   protected readonly categoryService = inject(CategoryService);
 
+  protected readonly hrStatuses = HR_PROCESS_STATUSES;
+
   protected readonly uncategorizedCount = computed(
     () => this.contactService.contacts().filter((contact) => contact.categoryId === null).length,
+  );
+
+  /** Max HR-status count, so bar widths can be relative (percent). */
+  protected readonly maxHrStatusCount = computed(() =>
+    Math.max(1, ...Object.values(this.contactService.hrStatusCounts())),
   );
 
   /** Per-category usage, sorted by descending count for the bar chart. */

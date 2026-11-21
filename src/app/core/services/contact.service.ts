@@ -1,25 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Contact } from '../models/contact.model';
-import { Category } from '../models/category.model';
+import { Contact, HrProcessStatus } from '../models/contact.model';
 import { StorageService } from './storage.service';
 import { generateId, nowIso } from '../utils/id';
-
-/** Payload shape used when importing a full data snapshot from JSON. */
-export interface DataSnapshot {
-  contacts: Contact[];
-  categories: Category[];
-}
-
-/** Data needed to create a new contact (id and timestamps are generated). */
-export type ContactDraft = Omit<Contact, 'id' | 'createdAt' | 'updatedAt'>;
+import { composeFullName } from '../models/contact-name.model';
 
 const STORAGE_KEY = 'contacts';
 
 /**
  * Single source of truth for contacts. State is held in a signal and
  * mirrored to localStorage on every mutation. All access to contacts
- * goes through this service so a future backend can replace the
- * storage layer without touching feature code.
+ * goes through this service so a future backend (or the Phase-2 ERM
+ * modules, which reference contacts via their `id`) can build on it
+ * without touching feature code.
  */
 @Injectable({ providedIn: 'root' })
 export class ContactService {
@@ -36,104 +28,70 @@ export class ContactService {
     () => this._contacts().filter((contact) => contact.favorite).length,
   );
 
+  /** Contacts present in their assigned company, vs. those who left. */
+  readonly companyActiveCount = computed(
+    () => this._contacts().filter((contact) => contact.isCompanyActive).length,
+  );
+  readonly companyInactiveCount = computed(() => this.total() - this.companyActiveCount());
+
+  /** HR lifecycle breakdown, keyed by status in display order. */
+  readonly hrStatusCounts = computed<Record<HrProcessStatus, number>>(() => {
+    const counts = { Pending: 0, Active: 0, Inactive: 0, Archived: 0 } as Record<
+      HrProcessStatus,
+      number
+    >;
+    for (const contact of this._contacts()) {
+      counts[contact.hrProcessStatus] += 1;
+    }
+    return counts;
+  });
+
   /** The most recently created contacts, newest first. */
   readonly latest = computed(() =>
-    [...this._contacts()].sort((a, b) => b.createdAt.localeCompare(a.createdAt)).slice(0, 5),
+    [...this._contacts()].sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 5),
   );
 
   private load(): Contact[] {
     const stored = this.storage.read<Contact[]>(STORAGE_KEY);
-    return Array.isArray(stored) ? stored : this.seed();
-  }
-
-  /**
-   * Small demo data set created on first launch so the application
-   * is immediately meaningful.
-   */
-  private seed(): Contact[] {
-    const categories: Category[] = [
-      {
-        id: generateId(),
-        name: { en: 'Students', fr: 'Étudiants' },
-        color: '#2563eb',
-        createdAt: nowIso(),
-      },
-      {
-        id: generateId(),
-        name: { en: 'Companies', fr: 'Entreprises' },
-        color: '#059669',
-        createdAt: nowIso(),
-      },
-      {
-        id: generateId(),
-        name: { en: 'Partners', fr: 'Partenaires' },
-        color: '#d97706',
-        createdAt: nowIso(),
-      },
-    ];
-    void this.storage.write('categories', categories);
-
-    const base = nowIso();
-    const contacts: Contact[] = [
-      {
-        id: generateId(),
-        firstName: 'Amina',
-        lastName: 'Diallo',
-        email: 'amina.diallo@example.com',
-        phone: '+33 6 12 34 56 78',
-        company: '',
-        jobTitle: 'Student',
-        categoryId: categories[0].id,
-        favorite: true,
-        notes: 'Full-stack specialization, graduating in 2026.',
-        createdAt: base,
-        updatedAt: base,
-      },
-      {
-        id: generateId(),
-        firstName: 'Julien',
-        lastName: 'Moreau',
-        email: 'j.moreau@techwave.example.com',
-        phone: '+33 1 44 55 66 77',
-        company: 'TechWave',
-        jobTitle: 'CTO',
-        categoryId: categories[1].id,
-        favorite: false,
-        notes: 'Met at the Paris tech job fair.',
-        createdAt: base,
-        updatedAt: base,
-      },
-      {
-        id: generateId(),
-        firstName: 'Sofia',
-        lastName: 'Bernard',
-        email: 'sofia.bernard@novapart.example.com',
-        phone: '+33 6 98 76 54 32',
-        company: 'NovaPart',
-        jobTitle: 'Partnership Manager',
-        categoryId: categories[2].id,
-        favorite: true,
-        notes: 'Prefers email contact before 10am.',
-        createdAt: base,
-        updatedAt: base,
-      },
-    ];
-    void this.storage.write(STORAGE_KEY, contacts);
-    return contacts;
+    return Array.isArray(stored) ? stored : [];
   }
 
   /** Returns a defensive copy of a contact, or null when not found. */
   getById(id: string): Contact | null {
     const contact = this._contacts().find((entry) => entry.id === id);
-    return contact ? { ...contact } : null;
+    return contact ? { ...contact, name: { ...contact.name, middleNames: [...contact.name.middleNames] } } : null;
+  }
+
+  /** Name-search helper shared by lists and the header quick search. */
+  matchesSearch(contact: Contact, term: string): boolean {
+    const needle = term.trim().toLowerCase();
+    if (needle === '') {
+      return true;
+    }
+    const haystack = [
+      contact.name.rawFullName,
+      contact.name.firstName,
+      contact.name.lastName,
+      ...contact.name.middleNames,
+      contact.name.shortTitle ?? '',
+      contact.name.longTitle ?? '',
+      composeFullName(contact.name),
+      contact.email,
+      contact.phone,
+      contact.city,
+      contact.jobTitle,
+    ]
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(needle);
   }
 
   /** Creates a contact, persists it and returns the stored entity. */
-  create(draft: ContactDraft): Contact | null {
+  create(draft: Omit<Contact, 'id' | 'addedAt' | 'updatedAt'>): Contact | null {
     const contact: Contact = {
       ...draft,
       id: generateId(),
-      createdAt: nowIso(),
+      addedAt: nowIso(),
       updatedAt: nowIso(),
     };
     if (!this.persist([contact, ...this._contacts()])) {
@@ -143,7 +101,7 @@ export class ContactService {
   }
 
   /** Updates an existing contact and refreshes its updatedAt timestamp. */
-  update(id: string, changes: Partial<ContactDraft>): Contact | null {
+  update(id: string, changes: Partial<Omit<Contact, 'id' | 'addedAt'>>): Contact | null {
     const previous = this.getById(id);
     if (!previous) {
       return null;
@@ -152,7 +110,7 @@ export class ContactService {
       ...previous,
       ...changes,
       id: previous.id,
-      createdAt: previous.createdAt,
+      addedAt: previous.addedAt,
       updatedAt: nowIso(),
     };
     if (!this.persist(this._contacts().map((entry) => (entry.id === id ? updated : entry)))) {
@@ -179,18 +137,23 @@ export class ContactService {
 
   /**
    * Replaces the whole state (used by the JSON import feature).
-   * Returns true when the snapshot was valid and persisted.
+   * Returns true when the snapshot was persisted.
    */
-  replaceAll(snapshot: DataSnapshot): boolean {
-    if (!Array.isArray(snapshot.contacts)) {
+  replaceAll(contacts: Contact[]): boolean {
+    if (!Array.isArray(contacts)) {
       return false;
     }
-    return this.persist(snapshot.contacts);
+    return this.persist(contacts);
   }
 
   /** All contacts belonging to a given category. */
   getByCategory(categoryId: string): Contact[] {
     return this._contacts().filter((contact) => contact.categoryId === categoryId);
+  }
+
+  /** All contacts assigned to a company, regardless of activity. */
+  getByCompany(companyId: string): Contact[] {
+    return this._contacts().filter((contact) => contact.companyId === companyId);
   }
 
   /** True when a write to localStorage failed since construction. */

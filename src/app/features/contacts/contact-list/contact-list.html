@@ -34,6 +34,35 @@
       </select>
     </label>
 
+    <label class="toolbar-field">
+      <span class="visually-hidden">{{ 'contacts.filterHrStatus' | t }}</span>
+      <select
+        class="field"
+        [value]="hrStatusFilter()"
+        (change)="onHrStatusChange($event); resetPage()"
+        [attr.aria-label]="'contacts.filterHrStatus' | t"
+      >
+        <option value="">{{ 'contacts.allHrStatuses' | t }}</option>
+        @for (status of hrStatuses; track status) {
+          <option [value]="status">{{ 'hr.status.' + status | t }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="toolbar-field">
+      <span class="visually-hidden">{{ 'contacts.filterCompanyActive' | t }}</span>
+      <select
+        class="field"
+        [value]="companyActiveFilter()"
+        (change)="onCompanyActiveChange($event); resetPage()"
+        [attr.aria-label]="'contacts.filterCompanyActive' | t"
+      >
+        <option value="">{{ 'contacts.allCompanyActivity' | t }}</option>
+        <option value="active">{{ 'contacts.companyActive' | t }}</option>
+        <option value="inactive">{{ 'contacts.companyInactive' | t }}</option>
+      </select>
+    </label>
+
     <label class="checkbox">
       <input
         type="checkbox"
